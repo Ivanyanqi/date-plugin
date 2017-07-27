@@ -20,7 +20,14 @@
 		var lastMonthDay = new Date(year,month-1,0);
 		var lastMonthDate = lastMonthDay.getDate();
 		var lastMonth  = firstDayWeek - 1; 
-		for(var i = 0 ; i<7*6; i++) {
+
+		// 首先计算本月的天数
+		var daysOfMonth = lastDayOfMonth.getDate() - firstDayOfMonth.getDate() + 1;
+		//加上上个月要显示的天数
+		var showDays = daysOfMonth + lastMonth;
+		//计算要显示的行数
+		var lineNum  = showDays % 7 === 0 ? showDays / 7 : Math.ceil(showDays / 7); 
+		for(var i = 0 ; i<7*lineNum; i++) {
 			var date = i + 1 - lastMonth;
 			var showDate = date;
 			var thisMonth = month;
