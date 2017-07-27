@@ -115,9 +115,8 @@
 		datepickerinit.buildUI();
 		var show = false;
 		input.addEventListener("click", function(){
-			warpper.style.left = input.offsetLeft + "px";
-			warpper.style.top = input.offsetTop + input.offsetHeight + 2 + "px";
-			warpper.style.width = input.offsetWidth + "px";
+			warpper.style.left = this.offsetLeft + "px";
+			warpper.style.top = this.offsetTop + input.offsetHeight + 2 + "px";
 			if(show){
 				warpper.classList.remove("date-plugin-ui-warpper-show");
 				show = false;
@@ -125,33 +124,36 @@
 				warpper.classList.add("date-plugin-ui-warpper-show");
 				show = true;
 			}
+			var self = this;
+			warpper.addEventListener("click",function(e){
+				var target = e.target;
+				if(target.classList.contains('date-plugin-prev-btn')){
+					datepickerinit.buildUI('prev');
+				}else if(target.classList.contains("date-plugin-next-btn")){
+					datepickerinit.buildUI('next');
+				}else if(target.tagName.toLowerCase() === 'td'){ // 点击单元格日期
+					var date;
+					if(target.dataset){
+						date = target.dataset.date;
+					}else {
+						date = target.getAttribute("data-date");
+					}
+					self.value = formatDate(year,month,date);
+					warpper.classList.remove("date-plugin-ui-warpper-show");
+					show = false;
+				}	
+			},false);
 		}, false);
-		warpper.addEventListener("click",function(e){
-			var target = e.target;
-			if(target.classList.contains('date-plugin-prev-btn')){
-				datepickerinit.buildUI('prev');
-			}else if(target.classList.contains("date-plugin-next-btn")){
-				datepickerinit.buildUI('next');
-			}else if(target.tagName.toLowerCase() === 'td'){ // 点击单元格日期
-				var date;
-				if(target.dataset){
-					date = target.dataset.date;
-				}else {
-					date = target.getAttribute("data-date");
-				}
-				input.value = formatDate(year,month,date);
-				warpper.classList.remove("date-plugin-ui-warpper-show");
-				show = false;
-			}	
-		},false);
-	}
+	}	
 	window.onload = function(){
-		var input = document.querySelector(".my-datepicker-box");
+		var input = document.querySelectorAll(".my-datepicker-box");
 		if(input){
 			warpper = document.createElement("div");
 			warpper.setAttribute("class","date-plugin-ui-warpper");
 			document.body.appendChild(warpper);
-			datepickerinit.init(input);
+			for(var i=0 ; i<input.length;i++){
+				datepickerinit.init(input[i]);
+			}
 		}
 	}
 })();

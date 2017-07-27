@@ -1,6 +1,7 @@
 .date-plugin-ui-warpper{
 	position: absolute;
 	font-size: 12px;
+	width: 200px;
 	color: #848484;
 	text-align: center;
 	background-color: #E9E9E9;
@@ -46,8 +47,8 @@
 }
 .date-plugin-ui-warpper .date-plugin-ui-body td{
 	text-align: center;
-	height: 30px;
-	line-height: 30px;
+	height: 20px;
+	line-height: 20px;
 	cursor: pointer;
 	border: 1px solid ;
 }
