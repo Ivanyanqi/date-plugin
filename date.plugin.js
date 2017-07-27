@@ -58,11 +58,11 @@
 	var warpper ;
 	var year ;
 	var month;
+	var show = false;
 	function addPadding (data) {
 		if( data < 10) data = '0' + data;
 		return data;
 	}
-
 	function formatDate(year,month,date){
 		var date = new Date(year,month - 1 ,date);
 		return date.getFullYear() + "-" + 
@@ -110,11 +110,10 @@
 			'</div>';
 			document.querySelector(".date-plugin-ui-warpper").innerHTML = html;
 	}
-
 	datepickerinit.init = function(input){
 		datepickerinit.buildUI();
-		var show = false;
-		input.addEventListener("click", function(){
+		input.addEventListener("click", function(e){ // 添加事件监听可以添加多个事件，直接绑定只能绑定一个事件
+			e.stopPropagation();  // 阻止事件冒泡
 			warpper.style.left = this.offsetLeft + "px";
 			warpper.style.top = this.offsetTop + input.offsetHeight + 2 + "px";
 			if(show){
@@ -126,6 +125,7 @@
 			}
 			var self = this;
 			function showDate (e) {
+				e.stopPropagation();
 				var target = e.target;
 				if(target.classList.contains('date-plugin-prev-btn')){
 					datepickerinit.buildUI('prev');
@@ -147,7 +147,8 @@
 			warpper.addEventListener("click",showDate,false);
 		}, false);
 	}	
-	window.onload = function(){
+
+	window.addEventListener("load", function(){
 		var input = document.querySelectorAll(".my-datepicker-box");
 		if(input){
 			warpper = document.createElement("div");
@@ -157,7 +158,12 @@
 				datepickerinit.init(input[i]);
 			}
 		}
-	}
+	}, false);
+
+	document.addEventListener("click", function(){
+		warpper.classList.remove("date-plugin-ui-warpper-show");
+		show = false;
+	}, false)
 })();
 
 
