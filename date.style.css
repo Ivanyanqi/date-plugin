@@ -1,0 +1,61 @@
+.date-plugin-ui-warpper{
+	position: absolute;
+	width:240px;
+	font-size: 20px;
+	color: #848484;
+	text-align: center;
+	background-color: #E9E9E9;
+	box-shadow: 5px 5px 5px #FCF9E9;
+	padding: 2px 5px;
+	display: none;
+}
+
+.date-plugin-ui-warpper-show{
+	display: block;
+}
+.date-plugin-ui-warpper .date-plugin-ui-hearder{
+	height : 30px;
+	line-height: 30px;
+	border-bottom: 1px solid #ECFDEE;
+	padding: 0px 30px;
+}
+
+.date-plugin-ui-warpper .date-plugin-ui-hearder .date-plugin-prev-btn{
+	float: left;
+	cursor: pointer;
+}
+
+.date-plugin-ui-warpper .date-plugin-ui-hearder .date-plugin-next-btn{
+	float: right;
+	cursor: pointer;
+}
+.date-plugin-ui-warpper .date-plugin-ui-body{
+	text-align: center;
+} 
+.date-plugin-ui-warpper .date-plugin-ui-body table{
+	width: 100%;
+	color: #979797;
+	border-collapse: collapse;
+}
+}
+.date-plugin-ui-warpper .date-plugin-ui-body th{
+	height: 24px;
+	line-height: 24px;
+	font-size: 16px;
+	text-align: center;
+}
+.date-plugin-ui-warpper .date-plugin-ui-body td{
+	font-size: 16px;
+	text-align: center;
+	height: 30px;
+	line-height: 30px;
+	cursor: pointer;
+	border: 1px solid ;
+}
+.my-datepicker-box{
+	width: 245px;
+	height: 30px;
+	border-radius: 2px;
+	font-size: 20px;
+	border: 1px solid #949494;
+}
