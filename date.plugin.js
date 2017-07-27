@@ -55,10 +55,8 @@
 
 (function(){
 	var datepickerinit = {};
-	var warpper ;
 	var year ;
 	var month;
-	var show = false;
 	function addPadding (data) {
 		if( data < 10) data = '0' + data;
 		return data;
@@ -68,7 +66,7 @@
 		return date.getFullYear() + "-" + 
 		addPadding(date.getMonth() + 1) + "-" + addPadding(date.getDate());
 	}
-	datepickerinit.buildUI = function  (toDate) {
+	datepickerinit.buildUI = function  (warpper,toDate) {
 		if(toDate){
 			if(toDate === 'prev') month--;
 			else if(toDate === 'next') month++;		
@@ -79,7 +77,7 @@
 		var html = '<div class="date-plugin-ui-hearder">'+
 				'<sapn class="date-plugin-btn date-plugin-prev-btn">&lt;</sapn>'+
 				'<sapn class="date-plugin-btn date-plugin-next-btn">&gt;</sapn>'+
-				'<sapn class="data-plugin-month">'+ year+'- '+ addPadding(month) +'</sapn>'+
+				'<sapn class="data-plugin-month">'+ year+'-'+ addPadding(month) +'</sapn>'+
 			'</div>'+
 			'<div class="date-plugin-ui-body">'+
 				'<table>'+
@@ -108,12 +106,34 @@
 					'</tbody>'+
 				'</table>'+
 			'</div>';
-			document.querySelector(".date-plugin-ui-warpper").innerHTML = html;
+			warpper.innerHTML = html;
 	}
+
+	function deleteWarpper(){
+		var warppers = document.querySelectorAll(".date-plugin-ui-warpper");
+		warppers.forEach(function(item){
+			document.body.removeChild(item);
+		});
+	}
+
+	var lastclick ; 
 	datepickerinit.init = function(input){
-		datepickerinit.buildUI();
 		input.addEventListener("click", function(e){ // 添加事件监听可以添加多个事件，直接绑定只能绑定一个事件
 			e.stopPropagation();  // 阻止事件冒泡
+			if(!this.dataset.index) this.dataset.index = this.offsetLeft + this.offsetTop;
+			var currentClick = this.dataset.index;
+			var show = false;
+			if(lastclick === currentClick){ // 操作同一个输入框
+				show = document.querySelector(".date-plugin-ui-warpper") ? 
+				(document.querySelector(".date-plugin-ui-warpper")
+				.classList.contains("date-plugin-ui-warpper-show") ? true:false ): false;
+			} 
+			lastclick = currentClick;
+			deleteWarpper();
+			var warpper = document.createElement("div");
+			warpper.setAttribute("class","date-plugin-ui-warpper");
+			document.body.appendChild(warpper);
+			datepickerinit.buildUI(warpper);
 			warpper.style.left = this.offsetLeft + "px";
 			warpper.style.top = this.offsetTop + input.offsetHeight + 2 + "px";
 			if(show){
@@ -124,13 +144,13 @@
 				show = true;
 			}
 			var self = this;
-			function showDate (e) {
+			warpper.addEventListener("click",function(e){
 				e.stopPropagation();
 				var target = e.target;
 				if(target.classList.contains('date-plugin-prev-btn')){
-					datepickerinit.buildUI('prev');
+					datepickerinit.buildUI(warpper,'prev');
 				}else if(target.classList.contains("date-plugin-next-btn")){
-					datepickerinit.buildUI('next');
+					datepickerinit.buildUI(warpper,'next');
 				}else if(target.tagName.toLowerCase() === 'td'){ // 点击单元格日期
 					var date;
 					if(target.dataset){
@@ -141,29 +161,20 @@
 					self.value = formatDate(year,month,date);
 					warpper.classList.remove("date-plugin-ui-warpper-show");
 					show = false;
-					warpper.removeEventListener("click", showDate, false);  // 防止事件的重复绑定
-				}	
-			}
-			warpper.addEventListener("click",showDate,false);
+				}
+			},false);
 		}, false);
 	}	
 
 	window.addEventListener("load", function(){
 		var input = document.querySelectorAll(".my-datepicker-box");
 		if(input){
-			warpper = document.createElement("div");
-			warpper.setAttribute("class","date-plugin-ui-warpper");
-			document.body.appendChild(warpper);
 			for(var i=0 ; i<input.length;i++){
 				datepickerinit.init(input[i]);
 			}
 		}
 	}, false);
-
-	document.addEventListener("click", function(){
-		warpper.classList.remove("date-plugin-ui-warpper-show");
-		show = false;
-	}, false)
+	document.addEventListener("click", deleteWarpper, false)
 })();
 
 
