@@ -110,6 +110,7 @@
 		input.addEventListener("click", function(){
 			warpper.style.left = input.offsetLeft + "px";
 			warpper.style.top = input.offsetTop + input.offsetHeight + 2 + "px";
+			warpper.style.width = input.offsetWidth + "px";
 			if(show){
 				warpper.classList.remove("date-plugin-ui-warpper-show");
 				show = false;
