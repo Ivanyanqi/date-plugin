@@ -125,7 +125,7 @@
 				show = true;
 			}
 			var self = this;
-			warpper.addEventListener("click",function(e){
+			function showDate (e) {
 				var target = e.target;
 				if(target.classList.contains('date-plugin-prev-btn')){
 					datepickerinit.buildUI('prev');
@@ -141,8 +141,10 @@
 					self.value = formatDate(year,month,date);
 					warpper.classList.remove("date-plugin-ui-warpper-show");
 					show = false;
+					warpper.removeEventListener("click", showDate, false);  // 防止事件的重复绑定
 				}	
-			},false);
+			}
+			warpper.addEventListener("click",showDate,false);
 		}, false);
 	}	
 	window.onload = function(){
