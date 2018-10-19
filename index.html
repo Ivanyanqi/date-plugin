@@ -4,11 +4,15 @@
 	<meta charset="UTF-8">
 	<title>Document</title>
 	<link rel="stylesheet" type="text/css" href="date.style.css">
+	
 </head>
 <body>
-	<input type="text" class="my-datepicker-box">
-
-
-	<script type="text/javascript" src="date.plugin.js"></script>
+	<input type="text" id="start" style="width: 200px">
+	<input type="text" id="end" style="width: 100px">
 </body>
+<script type="text/javascript" src="date.plugin.ext.js"></script>
+<script type="text/javascript">
+		datepickerinit.init(document.querySelector("#start"));
+		datepickerinit.init(document.querySelector("#end"));
+</script>
 </html>
