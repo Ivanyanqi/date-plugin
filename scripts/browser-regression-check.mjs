@@ -10,6 +10,8 @@ const testPages = [
   "tests/public/date-picker-api.test.html",
   "tests/public/month-control-api.test.html",
   "tests/public/package-manifest.test.html",
+  "tests/public/showcase-runtime.test.html",
+  "tests/public/showcase-homepage.test.html",
   "tests/options/date-constraints.test.html",
   "tests/options/display-options.test.html",
   "tests/options/input-sync-callbacks.test.html",

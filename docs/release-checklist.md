@@ -25,7 +25,8 @@
 - 逐页回归 `tests/public/*.html`
 - 逐页回归 `tests/options/*.html`
 - 回归 `regression.html`
-- 手动打开 `index.html`，检查桌面与移动端 demo 行为
+- 手动打开 `index.html`，检查 interactive showcase 首页、capability theater 与试玩区行为
+- 如从 `file://` 打开首页，确认页面会自动跳回 `http://127.0.0.1:8765/index.html`
 
 ## 包结构
 

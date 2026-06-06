@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Showcase Homepage Tests</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 24px;
+    }
+
+    .summary {
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+
+    .pass {
+      color: #12663a;
+    }
+
+    .fail {
+      color: #a12622;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    iframe {
+      width: 100%;
+      height: 720px;
+      border: 1px solid #d0d7de;
+      border-radius: 12px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Showcase Homepage Tests</h1>
+  <div id="summary" class="summary">Running checks...</div>
+  <ol id="results"></ol>
+  <iframe id="showcase-frame" title="showcase homepage" src="../../index.html"></iframe>
+
+  <script type="module">
+    var summary = document.getElementById("summary");
+    var results = document.getElementById("results");
+    var frame = document.getElementById("showcase-frame");
+    var failures = 0;
+
+    function logResult(name, passed, details) {
+      var item = document.createElement("li");
+      item.className = passed ? "pass" : "fail";
+      item.textContent = (passed ? "PASS: " : "FAIL: ") + name + " - " + details;
+      results.appendChild(item);
+      if (!passed) {
+        failures++;
+      }
+    }
+
+    function assert(name, condition, details) {
+      logResult(name, !!condition, details);
+    }
+
+    function waitFor(condition, timeout) {
+      return new Promise(function (resolve, reject) {
+        var start = Date.now();
+
+        function check() {
+          try {
+            if (condition()) {
+              resolve();
+              return;
+            }
+          } catch (error) {
+            reject(error);
+            return;
+          }
+
+          if (Date.now() - start > timeout) {
+            reject(new Error("timeout waiting for showcase state"));
+            return;
+          }
+
+          requestAnimationFrame(check);
+        }
+
+        check();
+      });
+    }
+
+    function click(node) {
+      node.dispatchEvent(new MouseEvent("click", {
+        bubbles: true,
+        cancelable: true
+      }));
+    }
+
+    try {
+      await new Promise(function (resolve, reject) {
+        frame.addEventListener("load", resolve, { once: true });
+        frame.addEventListener("error", reject, { once: true });
+      });
+
+      var doc = frame.contentDocument;
+      var win = frame.contentWindow;
+
+      await waitFor(function () {
+        return doc && doc.getElementById("selected-config") && doc.getElementById("selected-config").textContent.trim() !== "-";
+      }, 5000);
+
+      var presetButtons = doc.querySelectorAll(".showcase-preset");
+      var logItems = doc.querySelectorAll("#event-log li");
+      var codeBlock = doc.getElementById("quickstart-code");
+      var presetTitle = doc.getElementById("preset-title");
+      var presetDescription = doc.getElementById("preset-description");
+      var keyboardDemoButton = doc.getElementById("keyboard-demo-btn");
+      var keyboardDemoStatus = doc.getElementById("keyboard-demo-status");
+      var mobilePreviewLink = doc.getElementById("mobile-preview-link");
+      var capabilitySyncButton = doc.getElementById("capability-sync-btn");
+      var capabilityBoundedButton = doc.getElementById("capability-bounded-btn");
+      var capabilityThemeButton = doc.getElementById("capability-theme-btn");
+      var capabilitySyncStatus = doc.getElementById("capability-sync-status");
+      var capabilityKeyboardStatus = doc.getElementById("capability-keyboard-status");
+      var capabilityBoundedStatus = doc.getElementById("capability-bounded-status");
+      var capabilityThemeStatus = doc.getElementById("capability-theme-status");
+
+      assert(
+        "showcase homepage should expose playable controls and docs surfaces",
+        presetButtons.length === 4 &&
+          !!doc.getElementById("showcase-date") &&
+          !!doc.getElementById("selected-config") &&
+          !!doc.getElementById("quickstart-code") &&
+          !!doc.getElementById("preset-title") &&
+          !!keyboardDemoButton &&
+          !!keyboardDemoStatus &&
+          !!mobilePreviewLink &&
+          !!capabilitySyncButton &&
+          !!capabilityBoundedButton &&
+          !!capabilityThemeButton,
+        "expected four preset buttons, the live input, config summary, dynamic code block, keyboard demo controls, mobile entry link and interactive capability actions"
+      );
+
+      assert(
+        "showcase homepage should initialize the interaction log",
+        logItems.length >= 1,
+        "expected at least one interaction log entry after mount"
+      );
+
+      click(doc.querySelector('[data-preset="localized"]'));
+      await waitFor(function () {
+        return /locale:\s*"en-US"/.test(codeBlock.textContent) &&
+          /format:\s*"MM\/DD\/YYYY"/.test(codeBlock.textContent);
+      }, 5000);
+
+      assert(
+        "localized preset should update quick start code and description",
+        /locale:\s*"en-US"/.test(codeBlock.textContent) &&
+          /format:\s*"MM\/DD\/YYYY"/.test(codeBlock.textContent) &&
+          /英文/.test(presetTitle.textContent + presetDescription.textContent),
+        "expected localized preset to drive both the code sample and the explanation copy"
+      );
+
+      click(doc.querySelector('[data-preset="bounded"]'));
+      await waitFor(function () {
+        return /minDate:\s*"2026-08-05"/.test(codeBlock.textContent) &&
+          /disabledDates:\s*\["2026-08-10", "2026-08-16"\]/.test(codeBlock.textContent);
+      }, 5000);
+
+      assert(
+        "bounded preset should surface range constraints in the code sample",
+        /minDate:\s*"2026-08-05"/.test(codeBlock.textContent) &&
+          /maxDate:\s*"2026-08-20"/.test(codeBlock.textContent) &&
+          /disabledDates:\s*\["2026-08-10", "2026-08-16"\]/.test(codeBlock.textContent),
+        "expected bounded preset to expose minDate, maxDate and disabledDates"
+      );
+
+      click(doc.querySelector('[data-preset="explore"]'));
+      await waitFor(function () {
+        return /closeOnSelect:\s*false/.test(codeBlock.textContent);
+      }, 5000);
+
+      assert(
+        "explore preset should keep the panel open in the code sample",
+        /closeOnSelect:\s*false/.test(codeBlock.textContent),
+        "expected closeOnSelect to switch off for the explore preset"
+      );
+
+      click(doc.getElementById("set-today-btn"));
+      await waitFor(function () {
+        return doc.getElementById("selected-value").textContent.trim() !== "未选择";
+      }, 5000);
+
+      assert(
+        "showcase actions should keep selected value summary in sync",
+        doc.getElementById("selected-value").textContent.trim() === doc.getElementById("showcase-date").value.trim(),
+        "expected summary and input value to stay in sync after using showcase actions"
+      );
+
+      click(capabilitySyncButton);
+      await waitFor(function () {
+        return /已同步/.test(capabilitySyncStatus.textContent || "") &&
+          doc.getElementById("selected-value").textContent.trim() === "2026-08-18";
+      }, 5000);
+
+      assert(
+        "input sync capability should demonstrate value propagation",
+        /已同步/.test(capabilitySyncStatus.textContent || "") &&
+          doc.getElementById("showcase-date").value.trim() === "2026-08-18" &&
+          doc.getElementById("selected-value").textContent.trim() === "2026-08-18",
+        "expected input sync capability to write the same value into the input and summary"
+      );
+
+      click(capabilityBoundedButton);
+      await waitFor(function () {
+        return /已切换/.test(capabilityBoundedStatus.textContent || "") &&
+          /Constraints:on/.test(doc.getElementById("selected-config").textContent || "");
+      }, 5000);
+
+      assert(
+        "constraints capability should switch the stage into bounded mode",
+        /已切换/.test(capabilityBoundedStatus.textContent || "") &&
+          /约束日期/.test(doc.getElementById("preset-title").textContent || "") &&
+          /Constraints:on/.test(doc.getElementById("selected-config").textContent || ""),
+        "expected constraints capability to activate the bounded preset and reflect constraint status"
+      );
+
+      click(capabilityThemeButton);
+      await waitFor(function () {
+        return /暖色/.test(capabilityThemeStatus.textContent || "") &&
+          doc.body.getAttribute("data-showcase-tone") === "warm";
+      }, 5000);
+
+      assert(
+        "theme capability should switch the showcase tone",
+        /暖色/.test(capabilityThemeStatus.textContent || "") &&
+          doc.body.getAttribute("data-showcase-tone") === "warm",
+        "expected theme capability to toggle the page tone using showcase theme tokens"
+      );
+
+      assert(
+        "mobile preview entry should point to the dedicated sheet verification page",
+        /tests\/options\/mobile-sheet-layout\.test\.html$/.test(mobilePreviewLink.getAttribute("href") || ""),
+        "expected mobile preview link to lead to the mobile sheet layout verification page"
+      );
+
+      assert(
+        "keyboard capability entries should stay visible for the live theater",
+        /键盘/.test(keyboardDemoButton.textContent || "") &&
+          /键盘剧本|键盘路径|键盘剧场/.test((keyboardDemoStatus.textContent || "") + (capabilityKeyboardStatus.textContent || "")),
+        "expected homepage theater to keep a visible keyboard demo entry without relying on iframe focus behavior"
+      );
+
+      assert(
+        "showcase page should avoid runtime errors while interacting",
+        !win.__showcaseTestError,
+        "expected no runtime errors to be captured during showcase interactions"
+      );
+    } catch (error) {
+      logResult("Showcase homepage test bootstrap completed", false, error.message);
+    }
+
+    summary.textContent = failures === 0 ? "All checks passed." : failures + " check(s) failed.";
+    summary.className = "summary " + (failures === 0 ? "pass" : "fail");
+  </script>
+</body>
+</html>

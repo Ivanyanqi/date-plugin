@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Showcase Runtime Tests</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 24px;
+    }
+
+    .summary {
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+
+    .pass {
+      color: #12663a;
+    }
+
+    .fail {
+      color: #a12622;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Showcase Runtime Tests</h1>
+  <div id="summary" class="summary">Running checks...</div>
+  <ol id="results"></ol>
+
+  <script src="../../showcase.runtime.js"></script>
+  <script>
+    (function () {
+      var summary = document.getElementById("summary");
+      var results = document.getElementById("results");
+      var failures = 0;
+
+      function logResult(name, passed, details) {
+        var item = document.createElement("li");
+        item.className = passed ? "pass" : "fail";
+        item.textContent = (passed ? "PASS: " : "FAIL: ") + name + " - " + details;
+        results.appendChild(item);
+        if (!passed) {
+          failures++;
+        }
+      }
+
+      function assert(name, condition, details) {
+        logResult(name, !!condition, details);
+      }
+
+      try {
+        var runtime = window.datePluginShowcaseRuntime;
+        assert(
+          "showcase runtime should expose bootstrap helpers",
+          runtime &&
+            typeof runtime.getLocalPreviewRedirectUrl === "function" &&
+            typeof runtime.shouldAutoRedirect === "function",
+          "expected global showcase runtime helpers to be available"
+        );
+
+        var fileLocation = {
+          protocol: "file:",
+          pathname: "/Users/ivanqi/Documents/aiworkspace/projects/date-plugin/index.html",
+          search: "",
+          hash: "#playground"
+        };
+
+        assert(
+          "file preview should resolve to localhost showcase url",
+          runtime.getLocalPreviewRedirectUrl(fileLocation) === "http://127.0.0.1:8765/index.html#playground",
+          "expected file preview to redirect to the local showcase server"
+        );
+
+        assert(
+          "http preview should not redirect",
+          runtime.getLocalPreviewRedirectUrl({
+            protocol: "http:",
+            pathname: "/index.html",
+            search: "",
+            hash: "#playground"
+          }) === null,
+          "expected http runtime to stay on the current page"
+        );
+
+        assert(
+          "file preview should auto redirect by default",
+          runtime.shouldAutoRedirect(fileLocation) === true,
+          "expected file preview to auto redirect unless explicitly disabled"
+        );
+
+        assert(
+          "file preview should respect the stay query flag",
+          runtime.shouldAutoRedirect({
+            protocol: "file:",
+            pathname: "/Users/ivanqi/Documents/aiworkspace/projects/date-plugin/index.html",
+            search: "?filePreviewStay=1",
+            hash: "#playground"
+          }) === false,
+          "expected ?filePreviewStay=1 to keep the page on file preview mode"
+        );
+      } catch (error) {
+        logResult("Showcase runtime test bootstrap completed", false, error.message);
+      }
+
+      summary.textContent = failures === 0 ? "All checks passed." : failures + " check(s) failed.";
+      summary.className = "summary " + (failures === 0 ? "pass" : "fail");
+    })();
+  </script>
+</body>
+</html>

@@ -3,7 +3,8 @@ js date plugin
 
 ## Development Status
 
-- 当前仓库仍处于 `v1.0` 早期迭代，现有 `index.html` 和 `regression.html` 继续承担浏览器回归验证职责
+- 当前仓库仍处于 `v1.0` 早期迭代，`index.html` 现已升级为 interactive showcase 首页，`regression.html` 继续承担浏览器回归验证职责
+- interactive showcase 首页现在已经包含 capability theater、键盘剧本、移动端验证入口和 `file://` 预览自动跳转兜底
 - 新的纯逻辑源码已经开始沉淀到 `src/` 目录，后续会逐步替换 legacy 脚本中的重复实现
 - 当前本机 `node` 与 `npm` 链路已经恢复，仓库同时支持本地 CLI 自检与浏览器自动回归
 - 仓库已补充 GitHub Actions 浏览器回归工作流，并增加发布前 preflight 自检脚本
@@ -175,10 +176,13 @@ js date plugin
 </script>
 ```
 
-`index.html` 演示的是手动初始化方式，`regression.html` 用来做浏览器回归检查。
+`index.html` 当前是 interactive showcase 首页，包含真实可玩的日期选择器舞台、能力说明和快速接入区；`regression.html` 用来做浏览器回归检查。
+如果直接用 `file:///.../index.html` 打开首页，页面会自动引导回 `http://127.0.0.1:8765/index.html`；如只想保留静态预览，可使用 `?filePreviewStay=1`。
 `tests/public/date-picker-api.test.html` 用来验证第一版公共 API。
 `tests/public/month-control-api.test.html` 用来验证 `setMonth` 和 `onMonthChange`。
 `tests/public/package-manifest.test.html` 用来验证发布入口和发布文档骨架。
+`tests/public/showcase-runtime.test.html` 用来验证首页 `file://` 预览兜底和本地交互地址跳转逻辑。
+`tests/public/showcase-homepage.test.html` 用来验证 interactive showcase 首页、capability theater、动态接入代码和移动端入口联动。
 `tests/options/input-sync-callbacks.test.html` 用来验证输入同步、生命周期回调和行为选项。
 `tests/options/footer-actions-positioning.test.html` 用来验证 Today/Clear 操作区与基础面板定位。
 `tests/options/visual-states-placement.test.html` 用来验证状态视觉钩子与上下翻转定位语义。
@@ -199,6 +203,7 @@ js date plugin
 当前工程化验证入口：
 
 - 本地静态服务：`npm run serve`
+- 首页交互预览：`http://127.0.0.1:8765/index.html`
 - 版本准备预演：`npm run release:prepare -- 1.0.0-beta.3 --dry-run`
 - GitHub Release 文本导出：`npm run release:notes`
 - GitHub Release 命令预演：`npm run release:github`

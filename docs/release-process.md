@@ -73,6 +73,8 @@ GitHub Actions 工作流 `browser-regression` 会执行以下动作：
 - `tests/public/date-picker-api.test.html`
 - `tests/public/month-control-api.test.html`
 - `tests/public/package-manifest.test.html`
+- `tests/public/showcase-runtime.test.html`
+- `tests/public/showcase-homepage.test.html`
 - `tests/options/date-constraints.test.html`
 - `tests/options/display-options.test.html`
 - `tests/options/input-sync-callbacks.test.html`
@@ -88,11 +90,13 @@ GitHub Actions 工作流 `browser-regression` 会执行以下动作：
 
 即使 CI 通过，发布前仍建议手工回归以下路径：
 
-1. 打开 `index.html`，检查桌面端默认打开、翻月、选中、关闭行为
-2. 切换移动端视口，检查 sheet、overlay、锁滚和 safe-area
-3. 验证 `showToday`、`showClear`、`closeOnSelect`、`allowManualInput`
-4. 验证 `setMonth()` 和 `onMonthChange()` 的实际行为
-5. 抽样检查一页 public 测试和一页 options 测试，确认浏览器实际渲染没有异常
+1. 打开 `index.html`，检查 interactive showcase 首页首屏、试玩区打开、翻月、选中、关闭行为
+2. 确认 capability theater 中的输入同步、约束场景和主题变量动作可以真实触发
+3. 如通过 Finder 或其他文件入口打开首页，确认 `file://` 预览会自动引导回本地可交互地址
+4. 切换移动端视口，检查 sheet、overlay、锁滚和 safe-area
+5. 验证 `showToday`、`showClear`、`closeOnSelect`、`allowManualInput`
+6. 验证 `setMonth()` 和 `onMonthChange()` 的实际行为
+7. 抽样检查一页 public 测试和一页 options 测试，确认浏览器实际渲染没有异常
 
 ## 发布执行步骤
 
