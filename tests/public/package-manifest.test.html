@@ -135,6 +135,20 @@
         "expected .github/workflows/browser-regression.yml to be present"
       );
 
+      var pagesWorkflowResponse = await fetch("../../.github/workflows/github-pages.yml");
+      assert(
+        "github pages workflow should exist",
+        pagesWorkflowResponse.ok,
+        "expected .github/workflows/github-pages.yml to be present"
+      );
+
+      var noJekyllResponse = await fetch("../../.nojekyll");
+      assert(
+        "nojekyll marker should exist",
+        noJekyllResponse.ok,
+        "expected repository root to expose .nojekyll for static hosting"
+      );
+
       var scriptResponse = await fetch("../../scripts/browser-regression-check.mjs");
       assert(
         "browser regression script should exist",
@@ -202,6 +216,7 @@
       var compatibilityText = compatibilityResponse.ok ? await compatibilityResponse.text() : "";
       var releaseProcessText = releaseProcessResponse.ok ? await releaseProcessResponse.text() : "";
       var releaseNotesText = releaseNotesResponse.ok ? await releaseNotesResponse.text() : "";
+      var readmeText = manifest && packageResponse.ok ? await (await fetch("../../README.md")).text() : "";
       assert(
         "release checklist should mention compatibility, QA and publish steps",
         checklistText.indexOf("兼容性") >= 0 &&
@@ -215,11 +230,18 @@
         compatibilityText.indexOf("现代浏览器") >= 0 &&
           compatibilityText.indexOf("已知限制") >= 0 &&
           releaseProcessText.indexOf("自动回归流程") >= 0 &&
+          releaseProcessText.indexOf("GitHub Pages") >= 0 &&
           releaseProcessText.indexOf("发布执行步骤") >= 0 &&
           manifest &&
           releaseNotesText.indexOf("v" + manifest.version) >= 0 &&
           releaseNotesText.indexOf("已知限制") >= 0,
         "expected compatibility, process and release notes to describe support scope and current limits"
+      );
+
+      assert(
+        "README should mention the public GitHub Pages showcase url",
+        readmeText.indexOf("https://ivanyanqi.github.io/date-plugin/") >= 0,
+        "expected README to expose the GitHub Pages showcase address"
       );
     } catch (error) {
       logResult("Package manifest test bootstrap completed", false, error.message);

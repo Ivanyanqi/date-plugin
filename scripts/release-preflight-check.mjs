@@ -93,7 +93,9 @@ assert(
   "README.md",
   "package-lock.json",
   ".gitignore",
+  ".nojekyll",
   ".github/workflows/browser-regression.yml",
+  ".github/workflows/github-pages.yml",
   "scripts/browser-regression-check.mjs",
   "scripts/release-github.mjs",
   "scripts/release-notes-export.mjs",
@@ -130,6 +132,7 @@ assert(
   "README should document release and verification entrypoints",
   readmeText.includes("docs/release-process.md") &&
     readmeText.includes("CHANGELOG.md") &&
+    readmeText.includes("https://ivanyanqi.github.io/date-plugin/") &&
     readmeText.includes("npm run test:ci") &&
     readmeText.includes("npm run release:publish") &&
     readmeText.includes("npm run release:github") &&
@@ -143,6 +146,7 @@ assert(
   "release process should mention preflight and browser regression",
   releaseProcessText.includes("release:preflight") &&
     releaseProcessText.includes("browser-regression") &&
+    releaseProcessText.includes("GitHub Pages") &&
     releaseProcessText.includes("发布执行步骤"),
   "expected release process to mention preflight and CI flow"
 );

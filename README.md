@@ -11,6 +11,13 @@ js date plugin
 - 当前仍以 HTML 测试页和 Playwright 回归作为主验证路径，后续再按需补充更细粒度的 CLI 单元测试
 - 后续项目文档、计划和开发说明默认统一使用中文
 
+## 公网展示
+
+- GitHub Pages 展示地址：`https://ivanyanqi.github.io/date-plugin/`
+- 首页公网入口默认就是 interactive showcase：首页、能力剧场、快速接入区和测试入口都使用相对路径，适合直接发布为静态站点
+- 如果仓库第一次启用 Pages，请在 GitHub 仓库 `Settings -> Pages` 中把 Source 设为 `GitHub Actions`
+- 仓库已经提供 `.github/workflows/github-pages.yml`，推送到 `master` 或 `main` 后会自动发布
+
 ## 自动初始化
 
 1. 引入 `date.style.css` 和 `date.plugin.js`
@@ -204,6 +211,7 @@ js date plugin
 
 - 本地静态服务：`npm run serve`
 - 首页交互预览：`http://127.0.0.1:8765/index.html`
+- GitHub Pages 公网预览：`https://ivanyanqi.github.io/date-plugin/`
 - 版本准备预演：`npm run release:prepare -- 1.0.0-beta.3 --dry-run`
 - GitHub Release 文本导出：`npm run release:notes`
 - GitHub Release 命令预演：`npm run release:github`

@@ -10,6 +10,7 @@
 - `package.json` 的 `exports` 继续暴露 ESM、样式、legacy 手动初始化和 auto 初始化入口
 - 浏览器回归页仍是最核心的质量基线
 - GitHub Actions 负责执行 preflight + 浏览器自动回归，手工回归负责补充真实交互确认
+- GitHub Pages 负责把 interactive showcase 首页发布到公网展示地址 `https://ivanyanqi.github.io/date-plugin/`
 
 ## 版本推进约定
 
@@ -64,6 +65,20 @@ GitHub Actions 工作流 `browser-regression` 会执行以下动作：
 6. 执行浏览器回归脚本
 7. 逐页检查各测试页 `#summary` 是否输出 `All checks passed.`
 
+### GitHub Pages 发布
+
+仓库当前提供 `.github/workflows/github-pages.yml` 用于静态发布：
+
+1. 在 `master` 或 `main` 有新提交时自动触发
+2. 用 `actions/configure-pages` 准备 Pages 元数据
+3. 把仓库根目录下的静态资源整理到 `_site/`
+4. 保留 `index.html`、样式、`src/`、`docs/`、`tests/`、`regression.html` 和 showcase 运行时文件
+5. 写入 `.nojekyll`，避免静态目录被默认 Jekyll 规则过滤
+6. 通过 `actions/upload-pages-artifact` 上传静态产物
+7. 通过 `actions/deploy-pages` 发布到仓库 Pages 地址
+
+如果仓库第一次启用 GitHub Pages，还需要在仓库 `Settings -> Pages` 中把 Source 设为 `GitHub Actions`。
+
 ### 当前回归范围
 
 - `tests/core/calendar.test.html`
@@ -93,10 +108,11 @@ GitHub Actions 工作流 `browser-regression` 会执行以下动作：
 1. 打开 `index.html`，检查 interactive showcase 首页首屏、试玩区打开、翻月、选中、关闭行为
 2. 确认 capability theater 中的输入同步、约束场景和主题变量动作可以真实触发
 3. 如通过 Finder 或其他文件入口打开首页，确认 `file://` 预览会自动引导回本地可交互地址
-4. 切换移动端视口，检查 sheet、overlay、锁滚和 safe-area
-5. 验证 `showToday`、`showClear`、`closeOnSelect`、`allowManualInput`
-6. 验证 `setMonth()` 和 `onMonthChange()` 的实际行为
-7. 抽样检查一页 public 测试和一页 options 测试，确认浏览器实际渲染没有异常
+4. 如本轮涉及公网展示，打开 `https://ivanyanqi.github.io/date-plugin/` 确认首页资源和相对路径加载正常
+5. 切换移动端视口，检查 sheet、overlay、锁滚和 safe-area
+6. 验证 `showToday`、`showClear`、`closeOnSelect`、`allowManualInput`
+7. 验证 `setMonth()` 和 `onMonthChange()` 的实际行为
+8. 抽样检查一页 public 测试和一页 options 测试，确认浏览器实际渲染没有异常
 
 ## 发布执行步骤
 
