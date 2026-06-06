@@ -3,7 +3,7 @@ js date plugin
 
 ## Development Status
 
-- 当前仓库仍处于 `v1.0` 早期迭代，`index.html` 现已升级为 interactive showcase 首页，`regression.html` 继续承担浏览器回归验证职责
+- 当前仓库仍处于 `v1.0` 早期迭代，[index.html](./index.html) 现已升级为 interactive showcase 首页，[regression.html](./regression.html) 继续承担浏览器回归验证职责
 - interactive showcase 首页现在已经包含 capability theater、键盘剧本、移动端验证入口和 `file://` 预览自动跳转兜底
 - 新的纯逻辑源码已经开始沉淀到 `src/` 目录，后续会逐步替换 legacy 脚本中的重复实现
 - 当前本机 `node` 与 `npm` 链路已经恢复，仓库同时支持本地 CLI 自检与浏览器自动回归
@@ -13,14 +13,14 @@ js date plugin
 
 ## 公网展示
 
-- GitHub Pages 展示地址：`https://ivanyanqi.github.io/date-plugin/`
-- 首页公网入口默认就是 interactive showcase：首页、能力剧场、快速接入区和测试入口都使用相对路径，适合直接发布为静态站点
+- GitHub Pages 展示地址：<a href="https://ivanyanqi.github.io/date-plugin/" target="_blank" rel="noreferrer">https://ivanyanqi.github.io/date-plugin/</a>
+- 首页公网入口默认就是 <a href="https://ivanyanqi.github.io/date-plugin/" target="_blank" rel="noreferrer">interactive showcase</a>：首页、能力剧场、快速接入区和测试入口都使用相对路径，适合直接发布为静态站点
 - 如果仓库第一次启用 Pages，请在 GitHub 仓库 `Settings -> Pages` 中把 Source 设为 `GitHub Actions`
-- 仓库已经提供 `.github/workflows/github-pages.yml`，推送到 `master` 或 `main` 后会自动发布
+- 仓库已经提供 [`.github/workflows/github-pages.yml`](./.github/workflows/github-pages.yml)，推送到 `master` 或 `main` 后会自动发布
 
 ## 自动初始化
 
-1. 引入 `date.style.css` 和 `date.plugin.js`
+1. 引入 [date.style.css](./date.style.css) 和 [date.plugin.js](./date.plugin.js)
 2. 为 input 添加 `my-datepicker-box` 类名
 
 ```html
@@ -81,10 +81,10 @@ js date plugin
 
 当前包导出入口：
 
-- `date-plugin` -> `./src/index.js`
-- `date-plugin/styles` -> `./date.style.css`
-- `date-plugin/legacy` -> `./date.plugin.ext.js`
-- `date-plugin/auto` -> `./date.plugin.js`
+- `date-plugin` -> [./src/index.js](./src/index.js)
+- `date-plugin/styles` -> [./date.style.css](./date.style.css)
+- `date-plugin/legacy` -> [./date.plugin.ext.js](./date.plugin.ext.js)
+- `date-plugin/auto` -> [./date.plugin.js](./date.plugin.js)
 
 当前已经支持的主要配置：
 
@@ -131,7 +131,7 @@ js date plugin
 
 当前面板样式能力：
 
-- `date.style.css` 已切换为 CSS 变量驱动
+- [date.style.css](./date.style.css) 已切换为 CSS 变量驱动
 - 可通过覆盖 `--dp-panel-width`、`--dp-panel-background`、`--dp-accent` 等变量调整主题
 - 打开面板时会自动进行基础视口夹紧，避免右侧空间不足时直接溢出屏幕
 - 底部空间不足时，面板会自动翻转到输入框上方，并暴露 `data-placement="top|bottom"`
@@ -159,7 +159,7 @@ js date plugin
 
 ## 手动初始化
 
-1. 引入 `date.style.css` 和 `date.plugin.ext.js`
+1. 引入 [date.style.css](./date.style.css) 和 [date.plugin.ext.js](./date.plugin.ext.js)
 2. 对需要的 input 调用 `datepickerinit.init(...)`
 
 ```html
@@ -183,39 +183,39 @@ js date plugin
 </script>
 ```
 
-`index.html` 当前是 interactive showcase 首页，包含真实可玩的日期选择器舞台、能力说明和快速接入区；`regression.html` 用来做浏览器回归检查。
-如果直接用 `file:///.../index.html` 打开首页，页面会自动引导回 `http://127.0.0.1:8765/index.html`；如只想保留静态预览，可使用 `?filePreviewStay=1`。
-`tests/public/date-picker-api.test.html` 用来验证第一版公共 API。
-`tests/public/month-control-api.test.html` 用来验证 `setMonth` 和 `onMonthChange`。
-`tests/public/package-manifest.test.html` 用来验证发布入口和发布文档骨架。
-`tests/public/showcase-runtime.test.html` 用来验证首页 `file://` 预览兜底和本地交互地址跳转逻辑。
-`tests/public/showcase-homepage.test.html` 用来验证 interactive showcase 首页、capability theater、动态接入代码和移动端入口联动。
-`tests/options/input-sync-callbacks.test.html` 用来验证输入同步、生命周期回调和行为选项。
-`tests/options/footer-actions-positioning.test.html` 用来验证 Today/Clear 操作区与基础面板定位。
-`tests/options/visual-states-placement.test.html` 用来验证状态视觉钩子与上下翻转定位语义。
-`tests/options/mobile-sheet-layout.test.html` 用来验证移动端 bottom-sheet 模式与操作区布局。
-`tests/options/mobile-overlay-scroll-lock.test.html` 用来验证移动端遮罩层、锁滚和遮罩点击关闭。
-`tests/options/mobile-animation-safe-area.test.html` 用来验证移动端动画状态和安全区底部留白。
-`tests/options/mobile-reduced-motion.test.html` 用来验证系统减少动画偏好下的即时开关行为。
+[index.html](./index.html) 当前是 interactive showcase 首页，包含真实可玩的日期选择器舞台、能力说明和快速接入区；[regression.html](./regression.html) 用来做浏览器回归检查。
+如果直接用 `file:///.../index.html` 打开首页，页面会自动引导回 <a href="http://127.0.0.1:8765/index.html" target="_blank" rel="noreferrer">http://127.0.0.1:8765/index.html</a>；如只想保留静态预览，可使用 `?filePreviewStay=1`。
+[tests/public/date-picker-api.test.html](./tests/public/date-picker-api.test.html) 用来验证第一版公共 API。
+[tests/public/month-control-api.test.html](./tests/public/month-control-api.test.html) 用来验证 `setMonth` 和 `onMonthChange`。
+[tests/public/package-manifest.test.html](./tests/public/package-manifest.test.html) 用来验证发布入口和发布文档骨架。
+[tests/public/showcase-runtime.test.html](./tests/public/showcase-runtime.test.html) 用来验证首页 `file://` 预览兜底和本地交互地址跳转逻辑。
+[tests/public/showcase-homepage.test.html](./tests/public/showcase-homepage.test.html) 用来验证 interactive showcase 首页、capability theater、动态接入代码和移动端入口联动。
+[tests/options/input-sync-callbacks.test.html](./tests/options/input-sync-callbacks.test.html) 用来验证输入同步、生命周期回调和行为选项。
+[tests/options/footer-actions-positioning.test.html](./tests/options/footer-actions-positioning.test.html) 用来验证 Today/Clear 操作区与基础面板定位。
+[tests/options/visual-states-placement.test.html](./tests/options/visual-states-placement.test.html) 用来验证状态视觉钩子与上下翻转定位语义。
+[tests/options/mobile-sheet-layout.test.html](./tests/options/mobile-sheet-layout.test.html) 用来验证移动端 bottom-sheet 模式与操作区布局。
+[tests/options/mobile-overlay-scroll-lock.test.html](./tests/options/mobile-overlay-scroll-lock.test.html) 用来验证移动端遮罩层、锁滚和遮罩点击关闭。
+[tests/options/mobile-animation-safe-area.test.html](./tests/options/mobile-animation-safe-area.test.html) 用来验证移动端动画状态和安全区底部留白。
+[tests/options/mobile-reduced-motion.test.html](./tests/options/mobile-reduced-motion.test.html) 用来验证系统减少动画偏好下的即时开关行为。
 
 发布相关文档：
 
-- `docs/release-checklist.md`
-- `docs/release-process.md`
-- `docs/browser-compatibility.md`
-- `docs/release-notes-v1.0.0-beta.2.md`
-- `CHANGELOG.md`
-- `LICENSE`
+- [docs/release-checklist.md](./docs/release-checklist.md)
+- [docs/release-process.md](./docs/release-process.md)
+- [docs/browser-compatibility.md](./docs/browser-compatibility.md)
+- [docs/release-notes-v1.0.0-beta.2.md](./docs/release-notes-v1.0.0-beta.2.md)
+- [CHANGELOG.md](./CHANGELOG.md)
+- [LICENSE](./LICENSE)
 
 当前工程化验证入口：
 
 - 本地静态服务：`npm run serve`
-- 首页交互预览：`http://127.0.0.1:8765/index.html`
-- GitHub Pages 公网预览：`https://ivanyanqi.github.io/date-plugin/`
+- 首页交互预览：<a href="http://127.0.0.1:8765/index.html" target="_blank" rel="noreferrer">http://127.0.0.1:8765/index.html</a>
+- GitHub Pages 公网预览：<a href="https://ivanyanqi.github.io/date-plugin/" target="_blank" rel="noreferrer">https://ivanyanqi.github.io/date-plugin/</a>
 - 版本准备预演：`npm run release:prepare -- 1.0.0-beta.3 --dry-run`
 - GitHub Release 文本导出：`npm run release:notes`
 - GitHub Release 命令预演：`npm run release:github`
 - 完整发布计划预演：`npm run release:publish`（会输出 remote、upstream、gh 登录和工作区状态）
 - 发布前自检：`npm run release:preflight`
 - 浏览器自动回归脚本：`npm run test:ci`
-- CI 工作流：`.github/workflows/browser-regression.yml`
+- CI 工作流：[`.github/workflows/browser-regression.yml`](./.github/workflows/browser-regression.yml)

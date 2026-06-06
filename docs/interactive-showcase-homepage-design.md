@@ -2,7 +2,7 @@
 
 ## 目标
 
-把当前偏 demo 性质的 `index.html` 升级为一个同时面向开发者和产品/设计评审的 interactive showcase 首页。首页不再只是“有两个 input 的测试入口”，而是一个能让访客第一时间上手体验、理解能力边界、并继续查看接入方式的产品展示页。
+把当前偏 demo 性质的 [index.html](../index.html) 升级为一个同时面向开发者和产品/设计评审的 interactive showcase 首页。首页不再只是“有两个 input 的测试入口”，而是一个能让访客第一时间上手体验、理解能力边界、并继续查看接入方式的产品展示页。
 
 ## 目标用户
 
@@ -117,10 +117,10 @@
 
 这轮只改 showcase 首页层，不改日期选择器核心行为定义：
 
-- 可以重写 `index.html`
+- 可以重写 [index.html](../index.html)
 - 可以增加首页专属样式
-- 可以用现有 `date.plugin.ext.js` 做真实交互
-- 不修改 `regression.html` 的职责
+- 可以用现有 [date.plugin.ext.js](../date.plugin.ext.js) 做真实交互
+- 不修改 [regression.html](../regression.html) 的职责
 - 不把发布测试页和首页展示页混在一起
 
 ## 验收标准

@@ -28,9 +28,9 @@
 
 候选模块：
 
-- `src/core/calendar.js`
-- `src/core/format.js`
-- `src/core/constraints.js`
+- [src/core/calendar.js](../src/core/calendar.js)
+- [src/core/format.js](../src/core/format.js)
+- [src/core/constraints.js](../src/core/constraints.js)
 
 ### 2. State 层
 
@@ -46,7 +46,7 @@
 
 候选模块：
 
-- `src/state/create-picker-state.js`
+- [src/state/create-picker-state.js](../src/state/create-picker-state.js)
 
 ### 3. View 层
 
@@ -79,7 +79,7 @@
 
 - `src/interactions/bind-input-events.js`
 - `src/interactions/bind-panel-events.js`
-- `src/interactions/keyboard-navigation.js`
+- [src/interactions/keyboard-navigation.js](../src/interactions/keyboard-navigation.js)
 
 ### 5. Public API 层
 
@@ -94,8 +94,8 @@
 
 候选模块：
 
-- `src/date-picker.js`
-- `src/index.js`
+- [src/date-picker.js](../src/date-picker.js)
+- [src/index.js](../src/index.js)
 
 ## 实例模型
 
@@ -213,8 +213,8 @@ const picker = new DatePicker(input, {
 
 ### 当前状态
 
-- `date.plugin.js` 同时混合了纯日期计算与 DOM 交互
-- `date.plugin.ext.js` 暴露手动初始化模式
+- [date.plugin.js](../date.plugin.js) 同时混合了纯日期计算与 DOM 交互
+- [date.plugin.ext.js](../date.plugin.ext.js) 暴露手动初始化模式
 - demo 页面和回归页当前仍直接依赖浏览器全局对象
 
 ### 目标状态

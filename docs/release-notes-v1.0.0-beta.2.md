@@ -8,7 +8,7 @@
 
 - 本机 `node` / `npm` 环境恢复后的完整浏览器自动回归链路
 - `npm run release:preflight` 发布前自检脚本
-- `package-lock.json` 与 `.gitignore` 工程化收口
+- [package-lock.json](../package-lock.json) 与 [.gitignore](../.gitignore) 工程化收口
 - GitHub Actions 升级为 `npm ci + release:preflight + test:ci`
 - 版本说明、变更记录和发布检查链路进一步向当前版本号收敛
 

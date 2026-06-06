@@ -8,9 +8,9 @@
 
 - 确认桌面端现代浏览器的核心路径可用
 - 确认移动端 sheet、遮罩层、锁滚和 reduced-motion 路径可用
-- 确认 `DatePicker` 模块化接入方式与 `date.plugin.ext.js` legacy 方式都可用
-- 确认 `date.style.css` 在默认主题下不依赖外部 CSS reset
-- 检查 `docs/browser-compatibility.md` 与当前真实支持范围一致
+- 确认 `DatePicker` 模块化接入方式与 [date.plugin.ext.js](../date.plugin.ext.js) legacy 方式都可用
+- 确认 [date.style.css](../date.style.css) 在默认主题下不依赖外部 CSS reset
+- 检查 [docs/browser-compatibility.md](./browser-compatibility.md) 与当前真实支持范围一致
 
 ## QA
 
@@ -21,28 +21,28 @@
 - 本机执行 `npm run release:publish`
 - 本机执行 `npm run test:ci`
 - 检查 GitHub Actions `browser-regression` 最近一次执行状态
-- 逐页回归 `tests/core/*.html`
-- 逐页回归 `tests/public/*.html`
-- 逐页回归 `tests/options/*.html`
-- 回归 `regression.html`
-- 手动打开 `index.html`，检查 interactive showcase 首页、capability theater 与试玩区行为
-- 如从 `file://` 打开首页，确认页面会自动跳回 `http://127.0.0.1:8765/index.html`
+- 逐页回归 [tests/core/](../tests/core/)
+- 逐页回归 [tests/public/](../tests/public/)
+- 逐页回归 [tests/options/](../tests/options/)
+- 回归 [regression.html](../regression.html)
+- 手动打开 [index.html](../index.html)，检查 interactive showcase 首页、capability theater 与试玩区行为
+- 如从 `file://` 打开首页，确认页面会自动跳回 <a href="http://127.0.0.1:8765/index.html" target="_blank" rel="noreferrer">http://127.0.0.1:8765/index.html</a>
 
 ## 包结构
 
-- 检查 `package.json` 的 `name`、`version`、`type` 和 `exports`
-- 检查 `license`、`repository` 和 `LICENSE` 文件
+- 检查 [package.json](../package.json) 的 `name`、`version`、`type` 和 `exports`
+- 检查 `license`、`repository` 和 [LICENSE](../LICENSE) 文件
 - 检查 `files` 白名单只包含需要发布的入口与文档
-- 检查 `README.md` 中的 API、配置项和测试入口与真实实现一致
+- 检查 [README.md](../README.md) 中的 API、配置项和测试入口与真实实现一致
 - 检查 legacy 入口、样式入口和 ESM 入口都能从仓库根路径访问
 
 ## 发布
 
 - 确认当前版本号符合本次发布阶段
 - 汇总本次发布变更摘要与已知限制
-- 检查 `CHANGELOG.md`
-- 检查 `docs/release-notes-<当前版本>.md`
-- 检查 `docs/release-process.md`
+- 检查 [CHANGELOG.md](../CHANGELOG.md)
+- 检查 `docs/release-notes-<当前版本>.md`，可参考 [docs/release-notes-v1.0.0-beta.2.md](./release-notes-v1.0.0-beta.2.md)
+- 检查 [docs/release-process.md](./release-process.md)
 - 在最终发布前重新执行一轮完整浏览器回归
 - 如需对外分发，再补充许可证、仓库地址和 npm 发布命令
 

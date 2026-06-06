@@ -2,13 +2,13 @@
 
 ## 目标
 
-把 `index.html` 从简单 demo 升级为 interactive showcase 首页，在不改动日期选择器核心逻辑的前提下，提供真实可玩的首页体验。
+把 [index.html](../index.html) 从简单 demo 升级为 interactive showcase 首页，在不改动日期选择器核心逻辑的前提下，提供真实可玩的首页体验。
 
 ## 范围
 
 ### 1. 页面结构重写
 
-- 重写 `index.html`
+- 重写 [index.html](../index.html)
 - 增加 Hero、能力区、接入区、文档入口区
 - 增加锚点滚动和页面内导航
 
@@ -21,7 +21,7 @@
 
 ### 3. 首页样式增强
 
-- 在 `date.style.css` 中追加首页专属样式区块
+- 在 [date.style.css](../date.style.css) 中追加首页专属样式区块
 - 建立页面级变量、栅格、卡片、标签、代码块和舞台容器样式
 - 确保桌面与移动端可读性
 
@@ -53,7 +53,7 @@
 
 ## 验证方式
 
-1. 打开 `index.html`，确认首页结构和视觉明显升级
+1. 打开 [index.html](../index.html)，确认首页结构和视觉明显升级
 2. 在试玩区切换配置，确认日期选择器行为跟随变化
-3. 回归 `regression.html`
+3. 回归 [regression.html](../regression.html)
 4. 执行 `npm run test:ci`

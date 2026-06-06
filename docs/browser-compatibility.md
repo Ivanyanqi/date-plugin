@@ -23,7 +23,7 @@
 
 - 核心逻辑通过浏览器测试页验证
 - 公共 API、options、移动端 sheet、overlay、safe-area 和 reduced-motion 均有独立测试页
-- `regression.html` 继续承担跨行为组合回归
+- [regression.html](../regression.html) 继续承担跨行为组合回归
 
 ## 当前不承诺的环境
 
