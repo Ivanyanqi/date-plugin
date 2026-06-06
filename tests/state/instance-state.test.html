@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Picker Instance State Tests</title>
+  <link rel="stylesheet" type="text/css" href="../../date.style.css">
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 24px;
+    }
+
+    .summary {
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+
+    .pass {
+      color: #12663a;
+    }
+
+    .fail {
+      color: #a12622;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Picker Instance State Tests</h1>
+  <input type="text" id="state-input" aria-label="state input">
+  <div id="summary" class="summary">Running checks...</div>
+  <ol id="results"></ol>
+
+  <script type="text/javascript" src="../../date.plugin.ext.js"></script>
+  <script type="module">
+    var input = document.getElementById("state-input");
+    var summary = document.getElementById("summary");
+    var results = document.getElementById("results");
+    var failures = 0;
+
+    function logResult(name, passed, details) {
+      var item = document.createElement("li");
+      item.className = passed ? "pass" : "fail";
+      item.textContent = (passed ? "PASS: " : "FAIL: ") + name + " - " + details;
+      results.appendChild(item);
+      if (!passed) {
+        failures++;
+      }
+    }
+
+    function assert(name, condition, details) {
+      logResult(name, !!condition, details);
+    }
+
+    function click(node) {
+      node.dispatchEvent(new MouseEvent("click", {
+        bubbles: true,
+        cancelable: true
+      }));
+    }
+
+    function wait(ms) {
+      return new Promise(function (resolve) {
+        setTimeout(resolve, ms);
+      });
+    }
+
+    try {
+      var stateModule = await import("../../src/state/create-picker-state.js");
+      var standaloneState = stateModule.createPickerState();
+      assert(
+        "createPickerState should provide default state fields",
+        standaloneState.isOpen === false &&
+          standaloneState.selectedDate === null &&
+          standaloneState.visibleYear === null &&
+          standaloneState.visibleMonth === null &&
+          standaloneState.inputValue === "",
+        "expected default instance state shape"
+      );
+
+      var instance = datepickerinit.init(input);
+      assert(
+        "init should return an instance object with state",
+        instance && instance.state && instance.wrapper,
+        "expected init to expose wrapper and state"
+      );
+
+      await wait(200);
+      click(input);
+      await wait(500);
+      assert(
+        "opening the picker should update state.isOpen and visible month",
+        instance.state.isOpen === true &&
+          instance.state.visibleYear !== null &&
+          instance.state.visibleMonth !== null,
+        "expected instance state to reflect opened month view"
+      );
+
+      var dateCell = document.querySelector(".date-plugin-ui-warpper-show td[data-date='15']");
+      click(dateCell);
+      await wait(500);
+      assert(
+        "selecting a date should update selectedDate, inputValue and close state",
+        instance.state.isOpen === false &&
+          instance.state.selectedDate &&
+          instance.state.inputValue === input.value &&
+          input.value.indexOf(instance.state.visibleYear + "-") === 0,
+        "expected selected state to sync back into the input"
+      );
+    } catch (error) {
+      logResult("State test bootstrap completed", false, error.message);
+    }
+
+    summary.textContent = failures === 0 ? "All checks passed." : failures + " check(s) failed.";
+    summary.className = "summary " + (failures === 0 ? "pass" : "fail");
+  </script>
+</body>
+</html>

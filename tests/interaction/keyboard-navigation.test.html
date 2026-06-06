@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Keyboard Navigation Tests</title>
+  <link rel="stylesheet" type="text/css" href="../../date.style.css">
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 24px;
+    }
+
+    .summary {
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+
+    .pass {
+      color: #12663a;
+    }
+
+    .fail {
+      color: #a12622;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Keyboard Navigation Tests</h1>
+  <input type="text" id="keyboard-input" aria-label="keyboard input">
+  <div id="summary" class="summary">Running checks...</div>
+  <ol id="results"></ol>
+
+  <script type="text/javascript" src="../../date.plugin.ext.js"></script>
+  <script type="module">
+    var input = document.getElementById("keyboard-input");
+    var summary = document.getElementById("summary");
+    var results = document.getElementById("results");
+    var failures = 0;
+
+    function logResult(name, passed, details) {
+      var item = document.createElement("li");
+      item.className = passed ? "pass" : "fail";
+      item.textContent = (passed ? "PASS: " : "FAIL: ") + name + " - " + details;
+      results.appendChild(item);
+      if (!passed) {
+        failures++;
+      }
+    }
+
+    function assert(name, condition, details) {
+      logResult(name, !!condition, details);
+    }
+
+    function click(node) {
+      node.dispatchEvent(new MouseEvent("click", {
+        bubbles: true,
+        cancelable: true
+      }));
+    }
+
+    function keydown(node, key) {
+      node.dispatchEvent(new KeyboardEvent("keydown", {
+        key: key,
+        bubbles: true,
+        cancelable: true
+      }));
+    }
+
+    function wait(ms) {
+      return new Promise(function (resolve) {
+        setTimeout(resolve, ms);
+      });
+    }
+
+    try {
+      if (window.datepickerCoreReady) {
+        await window.datepickerCoreReady;
+      }
+
+      var instance = datepickerinit.init(input);
+      click(input);
+      await wait(800);
+
+      assert(
+        "opening the picker should move focus into a date cell",
+        document.activeElement &&
+          document.activeElement.tagName.toLowerCase() === "td" &&
+          instance.state.focusedDate,
+        "expected active element to be a focused date cell"
+      );
+
+      var initialFocusedDate = instance.state.focusedDate;
+      keydown(document.activeElement, "ArrowRight");
+      await wait(300);
+      assert(
+        "ArrowRight should move the focused date",
+        instance.state.focusedDate && instance.state.focusedDate !== initialFocusedDate,
+        "expected focusedDate to change after ArrowRight"
+      );
+
+      keydown(document.activeElement, "Escape");
+      await wait(300);
+      assert(
+        "Escape should close the panel and restore input focus",
+        instance.state.isOpen === false && document.activeElement === input,
+        "expected picker to close and return focus to input"
+      );
+
+      click(input);
+      await wait(800);
+      var focusedBeforeEnter = instance.state.focusedDate;
+      keydown(document.activeElement, "Enter");
+      await wait(500);
+      assert(
+        "Enter should select the focused date and close the picker",
+        instance.state.isOpen === false &&
+          instance.state.selectedDate === focusedBeforeEnter &&
+          input.value === focusedBeforeEnter,
+        "expected Enter to commit the focused date into the input"
+      );
+    } catch (error) {
+      logResult("Keyboard test bootstrap completed", false, error.message);
+    }
+
+    summary.textContent = failures === 0 ? "All checks passed." : failures + " check(s) failed.";
+    summary.className = "summary " + (failures === 0 ? "pass" : "fail");
+  </script>
+</body>
+</html>

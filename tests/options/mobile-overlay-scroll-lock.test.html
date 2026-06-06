@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Mobile Overlay And Scroll Lock Tests</title>
+  <link rel="stylesheet" type="text/css" href="../../date.style.css">
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      min-height: 100vh;
+    }
+
+    .stage {
+      padding: 24px;
+    }
+
+    .summary {
+      font-weight: bold;
+      margin: 24px;
+      margin-bottom: 12px;
+    }
+
+    .pass {
+      color: #12663a;
+    }
+
+    .fail {
+      color: #a12622;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    #results {
+      margin: 0 24px 24px;
+    }
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <input type="text" id="mobile-input" aria-label="mobile input">
+  </div>
+  <div id="summary" class="summary">Running checks...</div>
+  <ol id="results"></ol>
+
+  <script type="module">
+    import { DatePicker } from "../../src/index.js";
+
+    var input = document.getElementById("mobile-input");
+    var summary = document.getElementById("summary");
+    var results = document.getElementById("results");
+    var failures = 0;
+    var restoreFns = [];
+
+    function logResult(name, passed, details) {
+      var item = document.createElement("li");
+      item.className = passed ? "pass" : "fail";
+      item.textContent = (passed ? "PASS: " : "FAIL: ") + name + " - " + details;
+      results.appendChild(item);
+      if (!passed) {
+        failures++;
+      }
+    }
+
+    function assert(name, condition, details) {
+      logResult(name, !!condition, details);
+    }
+
+    function wait(ms) {
+      return new Promise(function (resolve) {
+        setTimeout(resolve, ms);
+      });
+    }
+
+    function overrideProperty(target, key, value) {
+      var descriptor = Object.getOwnPropertyDescriptor(target, key);
+      Object.defineProperty(target, key, {
+        configurable: true,
+        get: function () {
+          return value;
+        }
+      });
+      restoreFns.push(function () {
+        if (descriptor) {
+          Object.defineProperty(target, key, descriptor);
+        } else {
+          delete target[key];
+        }
+      });
+    }
+
+    try {
+      overrideProperty(window, "innerWidth", 390);
+      overrideProperty(window, "innerHeight", 760);
+      overrideProperty(document.documentElement, "clientWidth", 390);
+      overrideProperty(document.documentElement, "clientHeight", 760);
+
+      var picker = new DatePicker(input, {
+        showToday: true,
+        showClear: true
+      });
+
+      await picker.ready;
+      await picker.open();
+      window.dispatchEvent(new Event("resize"));
+      await wait(1000);
+
+      var wrapper = document.querySelector(".date-plugin-ui-warpper-show");
+      var overlay = document.querySelector(".date-plugin-backdrop-show");
+
+      assert(
+        "mobile sheet mode should show an overlay and lock body scroll",
+        wrapper &&
+          overlay &&
+          wrapper.getAttribute("data-placement") === "sheet" &&
+          document.body.style.overflow === "hidden" &&
+          document.body.style.touchAction === "none",
+        "expected overlay visibility and body scroll lock in mobile sheet mode"
+      );
+
+      overlay.click();
+      await wait(500);
+
+      assert(
+        "clicking the overlay should close the panel and restore scrolling",
+        document.querySelectorAll(".date-plugin-ui-warpper-show").length === 0 &&
+          document.querySelectorAll(".date-plugin-backdrop-show").length === 0 &&
+          input.getAttribute("aria-expanded") === "false" &&
+          document.body.style.overflow === "" &&
+          document.body.style.touchAction === "",
+        "expected overlay click to close the picker and release body scroll lock"
+      );
+    } catch (error) {
+      logResult("Mobile overlay test bootstrap completed", false, error.message);
+    } finally {
+      while (restoreFns.length) {
+        restoreFns.pop()();
+      }
+    }
+
+    summary.textContent = failures === 0 ? "All checks passed." : failures + " check(s) failed.";
+    summary.className = "summary " + (failures === 0 ? "pass" : "fail");
+  </script>
+</body>
+</html>

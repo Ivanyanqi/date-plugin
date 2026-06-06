@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Date Constraints Tests</title>
+  <link rel="stylesheet" type="text/css" href="../../date.style.css">
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 24px;
+    }
+
+    .summary {
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+
+    .pass {
+      color: #12663a;
+    }
+
+    .fail {
+      color: #a12622;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Date Constraints Tests</h1>
+  <input type="text" id="constraints-input" aria-label="constraints input">
+  <div id="summary" class="summary">Running checks...</div>
+  <ol id="results"></ol>
+
+  <script type="module">
+    import { DatePicker } from "../../src/index.js";
+    import { formatDate } from "../../src/core/index.js";
+
+    var input = document.getElementById("constraints-input");
+    var summary = document.getElementById("summary");
+    var results = document.getElementById("results");
+    var failures = 0;
+
+    function logResult(name, passed, details) {
+      var item = document.createElement("li");
+      item.className = passed ? "pass" : "fail";
+      item.textContent = (passed ? "PASS: " : "FAIL: ") + name + " - " + details;
+      results.appendChild(item);
+      if (!passed) {
+        failures++;
+      }
+    }
+
+    function assert(name, condition, details) {
+      logResult(name, !!condition, details);
+    }
+
+    function click(node) {
+      node.dispatchEvent(new MouseEvent("click", {
+        bubbles: true,
+        cancelable: true
+      }));
+    }
+
+    function wait(ms) {
+      return new Promise(function (resolve) {
+        setTimeout(resolve, ms);
+      });
+    }
+
+    try {
+      var today = new Date();
+      var year = today.getFullYear();
+      var month = today.getMonth() + 1;
+      var minDate = formatDate(year, month, 5);
+      var maxDate = formatDate(year, month, 20);
+      var disabledDate = formatDate(year, month, 10);
+      var enabledDate = formatDate(year, month, 15);
+
+      var picker = new DatePicker(input, {
+        minDate: minDate,
+        maxDate: maxDate,
+        disabledDates: [disabledDate]
+      });
+
+      await picker.open();
+      await wait(900);
+
+      var minBlockedCell = document.querySelector('[data-value="' + formatDate(year, month, 1) + '"]');
+      var disabledCell = document.querySelector('[data-value="' + disabledDate + '"]');
+      var enabledCell = document.querySelector('[data-value="' + enabledDate + '"]');
+
+      assert(
+        "cells outside min/max or explicitly disabled should expose disabled semantics",
+        minBlockedCell &&
+          minBlockedCell.getAttribute("aria-disabled") === "true" &&
+          disabledCell &&
+          disabledCell.getAttribute("aria-disabled") === "true",
+        "expected blocked cells to expose aria-disabled=true"
+      );
+
+      assert(
+        "cells inside the allowed range should remain selectable",
+        enabledCell &&
+          enabledCell.getAttribute("aria-disabled") !== "true",
+        "expected enabled date to remain selectable"
+      );
+
+      click(disabledCell);
+      await wait(400);
+      assert(
+        "clicking a disabled date should not change the value or close the picker",
+        input.value === "" &&
+          document.querySelectorAll(".date-plugin-ui-warpper-show").length === 1,
+        "expected disabled date click to be ignored"
+      );
+
+      click(enabledCell);
+      await wait(500);
+      assert(
+        "clicking an enabled date should update the input and close the picker",
+        input.value === enabledDate &&
+          document.querySelectorAll(".date-plugin-ui-warpper-show").length === 0,
+        "expected enabled date click to select and close"
+      );
+    } catch (error) {
+      logResult("Constraints test bootstrap completed", false, error.message);
+    }
+
+    summary.textContent = failures === 0 ? "All checks passed." : failures + " check(s) failed.";
+    summary.className = "summary " + (failures === 0 ? "pass" : "fail");
+  </script>
+</body>
+</html>

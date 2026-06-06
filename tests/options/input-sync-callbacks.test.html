@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Input Sync And Callback Tests</title>
+  <link rel="stylesheet" type="text/css" href="../../date.style.css">
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 24px;
+    }
+
+    .summary {
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+
+    .pass {
+      color: #12663a;
+    }
+
+    .fail {
+      color: #a12622;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Input Sync And Callback Tests</h1>
+  <input type="text" id="sync-input" aria-label="sync input">
+  <input type="text" id="readonly-input" aria-label="readonly input">
+  <div id="summary" class="summary">Running checks...</div>
+  <ol id="results"></ol>
+
+  <script type="module">
+    import { DatePicker } from "../../src/index.js";
+
+    var input = document.getElementById("sync-input");
+    var readonlyInput = document.getElementById("readonly-input");
+    var summary = document.getElementById("summary");
+    var results = document.getElementById("results");
+    var failures = 0;
+    var eventLog = [];
+
+    function logResult(name, passed, details) {
+      var item = document.createElement("li");
+      item.className = passed ? "pass" : "fail";
+      item.textContent = (passed ? "PASS: " : "FAIL: ") + name + " - " + details;
+      results.appendChild(item);
+      if (!passed) {
+        failures++;
+      }
+    }
+
+    function assert(name, condition, details) {
+      logResult(name, !!condition, details);
+    }
+
+    function wait(ms) {
+      return new Promise(function (resolve) {
+        setTimeout(resolve, ms);
+      });
+    }
+
+    function fireInput(node, value) {
+      node.value = value;
+      node.dispatchEvent(new Event("input", {
+        bubbles: true,
+        cancelable: true
+      }));
+    }
+
+    try {
+      var picker = new DatePicker(input, {
+        format: "DD/MM/YYYY",
+        allowManualInput: true,
+        closeOnSelect: false,
+        onOpen: function () {
+          eventLog.push("open");
+        },
+        onClose: function () {
+          eventLog.push("close");
+        },
+        onChange: function (value, meta) {
+          eventLog.push("change:" + value + ":" + meta.source);
+        },
+        onInputError: function (payload) {
+          eventLog.push("input-error:" + payload.value);
+        }
+      });
+
+      var readonlyPicker = new DatePicker(readonlyInput, {
+        allowManualInput: false
+      });
+
+      await picker.ready;
+      await readonlyPicker.ready;
+
+      assert(
+        "allowManualInput=false should make the input readonly",
+        readonlyInput.readOnly === true,
+        "expected readonly input to block direct manual editing"
+      );
+
+      fireInput(input, "18/08/2026");
+      await wait(300);
+      await picker.open();
+      await wait(1000);
+
+      var activeWrapper = document.querySelector(".date-plugin-ui-warpper-show");
+      var focusedCell = activeWrapper && activeWrapper.querySelector('td[tabindex="0"]');
+      var monthLabel = activeWrapper && activeWrapper.querySelector(".data-plugin-month");
+
+      assert(
+        "valid manual input should sync visible month and focused date",
+        monthLabel &&
+          monthLabel.textContent.trim() === "2026-08" &&
+          focusedCell &&
+          focusedCell.getAttribute("data-display-value") === "18/08/2026",
+        "expected manual input to drive the opened panel state"
+      );
+
+      fireInput(input, "40/08/2026");
+      await wait(300);
+
+      assert(
+        "invalid manual input should preserve raw text and report error",
+        input.value === "40/08/2026" &&
+          input.getAttribute("aria-invalid") === "true" &&
+          eventLog.indexOf("input-error:40/08/2026") >= 0,
+        "expected invalid raw value to stay in the input and trigger onInputError"
+      );
+
+      fireInput(input, "19/08/2026");
+      await wait(300);
+      assert(
+        "valid manual input should emit onChange and clear invalid state",
+        input.getAttribute("aria-invalid") === "false" &&
+          eventLog.indexOf("change:19/08/2026:input") >= 0,
+        "expected valid input sync to emit onChange with source=input"
+      );
+
+      var selectableCell = Array.from(activeWrapper.querySelectorAll("td[data-date]")).find(function (cell) {
+        return cell.getAttribute("data-display-value") === "20/08/2026";
+      });
+      selectableCell.click();
+      await wait(400);
+
+      assert(
+        "closeOnSelect=false should keep the panel open after selection",
+        input.value === "20/08/2026" &&
+          input.getAttribute("aria-expanded") === "true" &&
+          document.querySelectorAll(".date-plugin-ui-warpper-show").length === 1 &&
+          eventLog.indexOf("change:20/08/2026:select") >= 0,
+        "expected selecting a date to keep the panel open and emit onChange"
+      );
+
+      await picker.close();
+      await wait(300);
+      assert(
+        "onOpen and onClose should be called around panel visibility changes",
+        eventLog.indexOf("open") >= 0 &&
+          eventLog.indexOf("close") >= 0,
+        "expected lifecycle callbacks for opening and closing"
+      );
+    } catch (error) {
+      logResult("Input sync test bootstrap completed", false, error.message);
+    }
+
+    summary.textContent = failures === 0 ? "All checks passed." : failures + " check(s) failed.";
+    summary.className = "summary " + (failures === 0 ? "pass" : "fail");
+  </script>
+</body>
+</html>

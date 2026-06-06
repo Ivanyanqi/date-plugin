@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Footer Actions And Positioning Tests</title>
+  <link rel="stylesheet" type="text/css" href="../../date.style.css">
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      min-height: 100vh;
+    }
+
+    .stage {
+      position: relative;
+      width: 100%;
+      min-height: 500px;
+      padding-top: 40px;
+    }
+
+    .edge-input {
+      position: absolute;
+      top: 80px;
+      right: 8px;
+      width: 120px;
+    }
+
+    .summary {
+      font-weight: bold;
+      margin: 24px;
+      margin-bottom: 12px;
+    }
+
+    .pass {
+      color: #12663a;
+    }
+
+    .fail {
+      color: #a12622;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    #results {
+      margin: 0 24px 24px;
+    }
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <input type="text" id="edge-input" class="edge-input" aria-label="edge input">
+  </div>
+  <div id="summary" class="summary">Running checks...</div>
+  <ol id="results"></ol>
+
+  <script type="module">
+    import { DatePicker } from "../../src/index.js";
+
+    var input = document.getElementById("edge-input");
+    var summary = document.getElementById("summary");
+    var results = document.getElementById("results");
+    var failures = 0;
+    var eventLog = [];
+
+    function logResult(name, passed, details) {
+      var item = document.createElement("li");
+      item.className = passed ? "pass" : "fail";
+      item.textContent = (passed ? "PASS: " : "FAIL: ") + name + " - " + details;
+      results.appendChild(item);
+      if (!passed) {
+        failures++;
+      }
+    }
+
+    function assert(name, condition, details) {
+      logResult(name, !!condition, details);
+    }
+
+    function wait(ms) {
+      return new Promise(function (resolve) {
+        setTimeout(resolve, ms);
+      });
+    }
+
+    function getTodayValue() {
+      var now = new Date();
+      var year = now.getFullYear();
+      var month = String(now.getMonth() + 1).padStart(2, "0");
+      var date = String(now.getDate()).padStart(2, "0");
+      return year + "-" + month + "-" + date;
+    }
+
+    try {
+      var picker = new DatePicker(input, {
+        showToday: true,
+        showClear: true,
+        onChange: function (value, meta) {
+          eventLog.push("change:" + value + ":" + meta.source);
+        }
+      });
+
+      await picker.ready;
+      await picker.open();
+      await wait(1000);
+
+      var wrapper = document.querySelector(".date-plugin-ui-warpper-show");
+      var inputRect = input.getBoundingClientRect();
+      var wrapperRect = wrapper.getBoundingClientRect();
+      var todayButton = wrapper.querySelector('[data-action="today"]');
+      var clearButton = wrapper.querySelector('[data-action="clear"]');
+
+      assert(
+        "showToday and showClear should render footer action buttons",
+        todayButton && clearButton,
+        "expected footer actions to be rendered when enabled"
+      );
+
+      assert(
+        "panel should stay inside the viewport when the input is near the right edge",
+        wrapperRect.right <= window.innerWidth &&
+          wrapperRect.left >= 0 &&
+          wrapperRect.top >= inputRect.bottom - 1,
+        "expected the panel to clamp horizontally and stay below the input"
+      );
+
+      todayButton.click();
+      await wait(500);
+
+      assert(
+        "Today action should select the current date and emit onChange",
+        input.value === getTodayValue() &&
+          eventLog.indexOf("change:" + getTodayValue() + ":today") >= 0,
+        "expected Today to write the current date and emit source=today"
+      );
+
+      await picker.open();
+      await wait(600);
+      wrapper = document.querySelector(".date-plugin-ui-warpper-show");
+      clearButton = wrapper && wrapper.querySelector('[data-action="clear"]');
+      clearButton.click();
+      await wait(500);
+
+      assert(
+        "Clear action should empty the value and emit onChange",
+        input.value === "" &&
+          eventLog.indexOf("change::clear") >= 0,
+        "expected Clear to empty the input and emit source=clear"
+      );
+    } catch (error) {
+      logResult("Footer action test bootstrap completed", false, error.message);
+    }
+
+    summary.textContent = failures === 0 ? "All checks passed." : failures + " check(s) failed.";
+    summary.className = "summary " + (failures === 0 ? "pass" : "fail");
+  </script>
+</body>
+</html>

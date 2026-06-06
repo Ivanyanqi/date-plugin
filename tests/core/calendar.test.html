@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Calendar Core Browser Tests</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 24px;
+    }
+
+    .summary {
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+
+    .pass {
+      color: #12663a;
+    }
+
+    .fail {
+      color: #a12622;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Calendar Core Browser Tests</h1>
+  <div id="summary" class="summary">Running checks...</div>
+  <ol id="results"></ol>
+
+  <script type="module">
+    import { getMonthAndDate, formatDate } from "../../src/core/index.js";
+
+    var summary = document.getElementById("summary");
+    var results = document.getElementById("results");
+    var failures = 0;
+
+    function logResult(name, passed, details) {
+      var item = document.createElement("li");
+      item.className = passed ? "pass" : "fail";
+      item.textContent = (passed ? "PASS: " : "FAIL: ") + name + " - " + details;
+      results.appendChild(item);
+      if (!passed) {
+        failures++;
+      }
+    }
+
+    function assert(name, condition, details) {
+      logResult(name, !!condition, details);
+    }
+
+    var leapFebruary = getMonthAndDate(2024, 2);
+    assert(
+      "Leap-year February should include 29 days",
+      leapFebruary.dateList.some(function (item) {
+        return item.date === 29 && item.month === 2;
+      }),
+      "expected a selectable day 29 in February 2024"
+    );
+
+    var june2026 = getMonthAndDate(2026, 6);
+    assert(
+      "Month grid should include leading or trailing outside-month dates",
+      june2026.dateList.some(function (item) {
+        return item.month !== 6;
+      }),
+      "expected June 2026 grid to contain neighbor-month dates"
+    );
+
+    assert(
+      "Format helper should normalize a date string",
+      formatDate(2026, 7, 15) === "2026-07-15",
+      'expected "2026-07-15"'
+    );
+
+    summary.textContent = failures === 0 ? "All checks passed." : failures + " check(s) failed.";
+    summary.className = "summary " + (failures === 0 ? "pass" : "fail");
+  </script>
+</body>
+</html>

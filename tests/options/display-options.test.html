@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Display Options Tests</title>
+  <link rel="stylesheet" type="text/css" href="../../date.style.css">
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 24px;
+    }
+
+    .summary {
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+
+    .pass {
+      color: #12663a;
+    }
+
+    .fail {
+      color: #a12622;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Display Options Tests</h1>
+  <input type="text" id="display-input" aria-label="display input">
+  <div id="summary" class="summary">Running checks...</div>
+  <ol id="results"></ol>
+
+  <script type="module">
+    import { DatePicker } from "../../src/index.js";
+
+    var input = document.getElementById("display-input");
+    var summary = document.getElementById("summary");
+    var results = document.getElementById("results");
+    var failures = 0;
+
+    function logResult(name, passed, details) {
+      var item = document.createElement("li");
+      item.className = passed ? "pass" : "fail";
+      item.textContent = (passed ? "PASS: " : "FAIL: ") + name + " - " + details;
+      results.appendChild(item);
+      if (!passed) {
+        failures++;
+      }
+    }
+
+    function assert(name, condition, details) {
+      logResult(name, !!condition, details);
+    }
+
+    function wait(ms) {
+      return new Promise(function (resolve) {
+        setTimeout(resolve, ms);
+      });
+    }
+
+    try {
+      var picker = new DatePicker(input, {
+        locale: "en-US",
+        format: "DD/MM/YYYY",
+        defaultValue: "15/08/2026"
+      });
+
+      await picker.ready;
+      assert(
+        "defaultValue should initialize the input immediately",
+        input.value === "15/08/2026" &&
+          picker.getValue() === "15/08/2026",
+        "expected defaultValue to seed both input and public value"
+      );
+
+      await picker.open();
+      await wait(1000);
+      var headers = Array.from(document.querySelectorAll("th")).map(function (cell) {
+        return cell.textContent.trim();
+      });
+      var focusedCell = document.querySelector('td[tabindex="0"]');
+
+      assert(
+        "locale should change weekday labels",
+        headers[0] === "Mon" && headers[6] === "Sun",
+        "expected weekday labels to render in English"
+      );
+
+      assert(
+        "defaultValue should focus the matching selected date when opening",
+        focusedCell &&
+          focusedCell.getAttribute("data-display-value") === "15/08/2026",
+        "expected focused cell to match the default value"
+      );
+
+      picker.setValue("16/08/2026");
+      await wait(300);
+      assert(
+        "setValue should preserve the configured format",
+        picker.getValue() === "16/08/2026" &&
+          input.value === "16/08/2026",
+        "expected display format DD/MM/YYYY to remain intact"
+      );
+    } catch (error) {
+      logResult("Display options test bootstrap completed", false, error.message);
+    }
+
+    summary.textContent = failures === 0 ? "All checks passed." : failures + " check(s) failed.";
+    summary.className = "summary " + (failures === 0 ? "pass" : "fail");
+  </script>
+</body>
+</html>

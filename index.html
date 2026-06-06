@@ -2,17 +2,56 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<title>Document</title>
+	<title>date-plugin demo</title>
 	<link rel="stylesheet" type="text/css" href="date.style.css">
-	
+	<style>
+		body {
+			font-family: sans-serif;
+			margin: 24px;
+			color: #203040;
+		}
+
+		.demo {
+			display: grid;
+			gap: 16px;
+			max-width: 420px;
+		}
+
+		.demo label {
+			display: grid;
+			gap: 6px;
+			font-size: 14px;
+			color: #526273;
+		}
+
+		.demo code {
+			font-size: 12px;
+		}
+	</style>
 </head>
 <body>
-	<input type="text" id="start" style="width: 200px">
-	<input type="text" id="end" style="width: 100px">
+	<div class="demo">
+		<p>Manual init example using <code>date.plugin.ext.js</code>.</p>
+		<label>
+			<span>开始日期</span>
+			<input type="text" id="start" style="width: 220px">
+		</label>
+		<label>
+			<span>结束日期</span>
+			<input type="text" id="end" style="width: 220px">
+		</label>
+	</div>
 </body>
 <script type="text/javascript" src="date.plugin.ext.js"></script>
 <script type="text/javascript">
-		datepickerinit.init(document.querySelector("#start"));
-		datepickerinit.init(document.querySelector("#end"));
+		datepickerinit.init(document.querySelector("#start"), {
+			showToday: true,
+			showClear: true
+		});
+		datepickerinit.init(document.querySelector("#end"), {
+			showToday: true,
+			showClear: true,
+			closeOnSelect: false
+		});
 </script>
 </html>

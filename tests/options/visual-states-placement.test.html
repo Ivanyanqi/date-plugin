@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Visual States And Placement Tests</title>
+  <link rel="stylesheet" type="text/css" href="../../date.style.css">
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      min-height: 1400px;
+    }
+
+    .canvas {
+      position: relative;
+      min-height: 1400px;
+      padding: 24px;
+      box-sizing: border-box;
+    }
+
+    .bottom-input {
+      position: fixed;
+      right: 24px;
+      bottom: 12px;
+      width: 140px;
+    }
+
+    .summary {
+      font-weight: bold;
+      margin: 24px;
+      margin-bottom: 12px;
+    }
+
+    .pass {
+      color: #12663a;
+    }
+
+    .fail {
+      color: #a12622;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    #results {
+      margin: 0 24px 24px;
+    }
+  </style>
+</head>
+<body>
+  <div class="canvas">
+    <input type="text" id="state-input" aria-label="state input">
+    <input type="text" id="bottom-input" class="bottom-input" aria-label="bottom input">
+  </div>
+  <div id="summary" class="summary">Running checks...</div>
+  <ol id="results"></ol>
+
+  <script type="module">
+    import { DatePicker } from "../../src/index.js";
+
+    var stateInput = document.getElementById("state-input");
+    var bottomInput = document.getElementById("bottom-input");
+    var summary = document.getElementById("summary");
+    var results = document.getElementById("results");
+    var failures = 0;
+
+    function logResult(name, passed, details) {
+      var item = document.createElement("li");
+      item.className = passed ? "pass" : "fail";
+      item.textContent = (passed ? "PASS: " : "FAIL: ") + name + " - " + details;
+      results.appendChild(item);
+      if (!passed) {
+        failures++;
+      }
+    }
+
+    function assert(name, condition, details) {
+      logResult(name, !!condition, details);
+    }
+
+    function wait(ms) {
+      return new Promise(function (resolve) {
+        setTimeout(resolve, ms);
+      });
+    }
+
+    function isoToday() {
+      var now = new Date();
+      var year = now.getFullYear();
+      var month = String(now.getMonth() + 1).padStart(2, "0");
+      var date = String(now.getDate()).padStart(2, "0");
+      return year + "-" + month + "-" + date;
+    }
+
+    try {
+      var today = isoToday();
+      var statePicker = new DatePicker(stateInput, {
+        defaultValue: today,
+        minDate: today,
+        maxDate: today,
+        disabledDates: []
+      });
+
+      var bottomPicker = new DatePicker(bottomInput, {
+        showToday: true,
+        showClear: true
+      });
+
+      await statePicker.ready;
+      await bottomPicker.ready;
+
+      await statePicker.open();
+      await wait(1000);
+
+      var wrapper = document.querySelector(".date-plugin-ui-warpper-show");
+      var selectedCell = wrapper.querySelector('[data-display-value="' + today + '"]');
+      var outsideCell = wrapper.querySelector(".date-plugin-cell-outside");
+      var disabledCell = wrapper.querySelector('.date-plugin-cell-disabled[aria-disabled="true"]');
+
+      assert(
+        "selected date should expose selected class and aria-selected",
+        selectedCell &&
+          selectedCell.classList.contains("date-plugin-cell-selected") &&
+          selectedCell.getAttribute("aria-selected") === "true",
+        "expected selected cell to expose both visual and semantic selected state"
+      );
+
+      assert(
+        "today cell should expose today semantics",
+        selectedCell &&
+          selectedCell.classList.contains("date-plugin-cell-today") &&
+          selectedCell.getAttribute("aria-current") === "date",
+        "expected today cell to be marked as the current date"
+      );
+
+      assert(
+        "outside-month cells should expose outside-month markers",
+        outsideCell &&
+          outsideCell.getAttribute("data-outside") === "true",
+        "expected outside-month cells to expose an explicit marker"
+      );
+
+      assert(
+        "disabled dates should expose a disabled class in addition to aria-disabled",
+        disabledCell &&
+          disabledCell.classList.contains("date-plugin-cell-disabled") &&
+          disabledCell.getAttribute("aria-disabled") === "true",
+        "expected disabled styling hook on blocked dates"
+      );
+
+      await statePicker.close();
+      await wait(300);
+      await bottomPicker.open();
+      await wait(1000);
+
+      var bottomWrapper = document.querySelector(".date-plugin-ui-warpper-show");
+      var bottomRect = bottomWrapper.getBoundingClientRect();
+      var inputRect = bottomInput.getBoundingClientRect();
+
+      assert(
+        "bottom-edge placement should flip upward and expose placement metadata",
+        bottomWrapper.getAttribute("data-placement") === "top" &&
+          bottomRect.bottom <= inputRect.top + 1,
+        "expected the panel to render above the input when there is not enough space below"
+      );
+    } catch (error) {
+      logResult("Visual states test bootstrap completed", false, error.message);
+    }
+
+    summary.textContent = failures === 0 ? "All checks passed." : failures + " check(s) failed.";
+    summary.className = "summary " + (failures === 0 ? "pass" : "fail");
+  </script>
+</body>
+</html>

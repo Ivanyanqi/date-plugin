@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>DatePicker Month Control API Tests</title>
+  <link rel="stylesheet" type="text/css" href="../../date.style.css">
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 24px;
+    }
+
+    .summary {
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+
+    .pass {
+      color: #12663a;
+    }
+
+    .fail {
+      color: #a12622;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h1>DatePicker Month Control API Tests</h1>
+  <input type="text" id="month-api-input" aria-label="month api input">
+  <div id="summary" class="summary">Running checks...</div>
+  <ol id="results"></ol>
+
+  <script type="module">
+    var input = document.getElementById("month-api-input");
+    var summary = document.getElementById("summary");
+    var results = document.getElementById("results");
+    var failures = 0;
+    var monthEvents = [];
+
+    function logResult(name, passed, details) {
+      var item = document.createElement("li");
+      item.className = passed ? "pass" : "fail";
+      item.textContent = (passed ? "PASS: " : "FAIL: ") + name + " - " + details;
+      results.appendChild(item);
+      if (!passed) {
+        failures++;
+      }
+    }
+
+    function assert(name, condition, details) {
+      logResult(name, !!condition, details);
+    }
+
+    function wait(ms) {
+      return new Promise(function (resolve) {
+        setTimeout(resolve, ms);
+      });
+    }
+
+    function loadFreshLegacyBridge() {
+      return new Promise(function (resolve, reject) {
+        var script = document.createElement("script");
+        script.src = "../../date.plugin.ext.js?month-control-api=1";
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+      });
+    }
+
+    try {
+      await loadFreshLegacyBridge();
+      var publicApi = await import("../../src/date-picker.js?month-control-api=1");
+      var DatePicker = publicApi.DatePicker;
+      var picker = new DatePicker(input, {
+        onMonthChange: function (payload) {
+          monthEvents.push(payload.source + ":" + payload.year + "-" + payload.month);
+        }
+      });
+
+      await picker.ready;
+
+      assert(
+        "constructor should expose setMonth as a public method",
+        typeof picker.setMonth === "function",
+        "expected DatePicker instance to expose setMonth(year, month)"
+      );
+
+      await picker.setMonth(2026, 12);
+      await picker.open();
+      await wait(900);
+
+      var monthLabel = document.querySelector(".date-plugin-ui-warpper-show .data-plugin-month");
+      assert(
+        "setMonth should control the visible panel month before opening",
+        monthLabel && monthLabel.textContent.trim() === "2026-12",
+        "expected visible month label to match the month set through API"
+      );
+
+      var nextButton = document.querySelector(".date-plugin-ui-warpper-show .date-plugin-next-btn");
+      nextButton.click();
+      await wait(400);
+      monthLabel = document.querySelector(".date-plugin-ui-warpper-show .data-plugin-month");
+
+      assert(
+        "clicking next should advance the panel and emit onMonthChange",
+        monthLabel &&
+          monthLabel.textContent.trim() === "2027-01" &&
+          monthEvents.indexOf("next:2027-1") >= 0,
+        "expected next navigation to emit source=next with the new month"
+      );
+
+      await picker.setMonth(2025, 3);
+      await wait(400);
+      monthLabel = document.querySelector(".date-plugin-ui-warpper-show .data-plugin-month");
+
+      assert(
+        "setMonth should update an already-open panel and emit onMonthChange",
+        monthLabel &&
+          monthLabel.textContent.trim() === "2025-03" &&
+          monthEvents.indexOf("api:2025-3") >= 0,
+        "expected API month control to rerender the open panel and emit source=api"
+      );
+    } catch (error) {
+      logResult("Month control API test bootstrap completed", false, error.message);
+    }
+
+    summary.textContent = failures === 0 ? "All checks passed." : failures + " check(s) failed.";
+    summary.className = "summary " + (failures === 0 ? "pass" : "fail");
+  </script>
+</body>
+</html>

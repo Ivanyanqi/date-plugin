@@ -1,0 +1,59 @@
+{
+  "name": "date-plugin",
+  "version": "1.0.0-beta.2",
+  "description": "一个支持桌面与移动端的轻量日期选择器。",
+  "license": "MIT",
+  "type": "module",
+  "homepage": "https://github.com/Ivanyanqi/date-plugin",
+  "bugs": {
+    "url": "https://github.com/Ivanyanqi/date-plugin/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:Ivanyanqi/date-plugin.git"
+  },
+  "exports": {
+    ".": "./src/index.js",
+    "./styles": "./date.style.css",
+    "./legacy": "./date.plugin.ext.js",
+    "./auto": "./date.plugin.js"
+  },
+  "files": [
+    "src",
+    "date.plugin.js",
+    "date.plugin.ext.js",
+    "date.style.css",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md",
+    "docs/release-checklist.md",
+    "docs/release-process.md",
+    "docs/browser-compatibility.md",
+    "docs/release-notes-v1.0.0-beta.2.md"
+  ],
+  "sideEffects": [
+    "./date.style.css",
+    "./date.plugin.js",
+    "./date.plugin.ext.js"
+  ],
+  "keywords": [
+    "date-picker",
+    "calendar",
+    "datepicker",
+    "javascript",
+    "mobile"
+  ],
+  "scripts": {
+    "serve": "python3 -m http.server 8765",
+    "test:browser": "echo '请启动静态服务后，在浏览器中运行 tests/ 与 regression.html 回归页。'",
+    "test:ci": "node scripts/browser-regression-check.mjs",
+    "release:preflight": "node scripts/release-preflight-check.mjs",
+    "release:prepare": "node scripts/release-prepare.mjs",
+    "release:notes": "node scripts/release-notes-export.mjs",
+    "release:github": "node scripts/release-github.mjs",
+    "release:publish": "node scripts/release-publish.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.54.0"
+  }
+}

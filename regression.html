@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Date Plugin Regression Checks</title>
+  <link rel="stylesheet" type="text/css" href="date.style.css">
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 24px;
+    }
+
+    .inputs {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .inputs input {
+      width: 180px;
+    }
+
+    .summary {
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+
+    .pass {
+      color: #12663a;
+    }
+
+    .fail {
+      color: #a12622;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Date Plugin Regression Checks</h1>
+  <div class="inputs">
+    <input type="text" id="start" aria-label="start date">
+    <input type="text" id="end" aria-label="end date">
+  </div>
+  <div id="summary" class="summary">Running checks...</div>
+  <ol id="results"></ol>
+
+  <script type="text/javascript" src="date.plugin.ext.js"></script>
+  <script type="text/javascript">
+    (function () {
+      var start = document.getElementById("start");
+      var end = document.getElementById("end");
+      var results = document.getElementById("results");
+      var summary = document.getElementById("summary");
+      var failures = 0;
+
+      datepickerinit.init(start);
+      datepickerinit.init(end);
+
+      function logResult(name, passed, details) {
+        var item = document.createElement("li");
+        item.className = passed ? "pass" : "fail";
+        item.textContent = (passed ? "PASS: " : "FAIL: ") + name + " - " + details;
+        results.appendChild(item);
+        if (!passed) {
+          failures++;
+        }
+      }
+
+      function assert(name, condition, details) {
+        logResult(name, !!condition, details);
+      }
+
+      function click(node) {
+        node.dispatchEvent(new MouseEvent("click", {
+          bubbles: true,
+          cancelable: true
+        }));
+      }
+
+      function waitForUi() {
+        return Promise.resolve()
+          .then(function () {
+            return new Promise(function (resolve) {
+              requestAnimationFrame(function () {
+                requestAnimationFrame(resolve);
+              });
+            });
+          });
+      }
+
+      function waitForVisiblePanelReady() {
+        return new Promise(function (resolve, reject) {
+          var startTime = Date.now();
+
+          function check() {
+            var panel = visibleWrapper();
+            if (panel && panel.querySelector(".data-plugin-month")) {
+              resolve(panel);
+              return;
+            }
+
+            if (Date.now() - startTime > 2000) {
+              reject(new Error("visible panel did not finish rendering"));
+              return;
+            }
+
+            requestAnimationFrame(check);
+          }
+
+          check();
+        });
+      }
+
+      function visibleWrapper() {
+        return document.querySelector(".date-plugin-ui-warpper-show");
+      }
+
+      function visibleCount() {
+        return document.querySelectorAll(".date-plugin-ui-warpper-show").length;
+      }
+
+      function monthLabel(wrapper) {
+        var current = wrapper || visibleWrapper();
+        var label = current ? current.querySelector(".data-plugin-month") : null;
+        return label ? label.textContent.trim() : null;
+      }
+
+      function monthIndex(label) {
+        if (!label) {
+          return NaN;
+        }
+        var parts = label.split("-").map(Number);
+        return parts[0] * 12 + parts[1] - 1;
+      }
+
+      async function clickVisibleNext() {
+        click(visibleWrapper().querySelector(".date-plugin-next-btn"));
+        await waitForUi();
+        await waitForVisiblePanelReady();
+      }
+
+      async function selectVisibleDay(day) {
+        click(visibleWrapper().querySelector('td[data-date="' + day + '"]'));
+        await waitForUi();
+      }
+
+      async function showPanel(input) {
+        click(input);
+        await waitForUi();
+        if (!visibleWrapper()) {
+          click(input);
+          await waitForUi();
+        }
+        await waitForVisiblePanelReady();
+      }
+
+      async function runChecks() {
+        if (window.datepickerCoreReady) {
+          await window.datepickerCoreReady;
+        }
+
+        await showPanel(end);
+        var firstMonth = monthLabel();
+        click(end);
+        await waitForUi();
+        await showPanel(end);
+        await clickVisibleNext();
+        var movedMonth = monthLabel();
+        assert(
+          "Repeated open should not duplicate next-month handlers",
+          monthIndex(movedMonth) - monthIndex(firstMonth) === 1,
+          "expected one-month move from " + firstMonth + " to " + movedMonth
+        );
+
+        await showPanel(start);
+        assert(
+          "Opening a second input should leave only one panel visible",
+          visibleCount() === 1,
+          "visible panel count was " + visibleCount()
+        );
+
+        click(start);
+        await waitForUi();
+        await showPanel(start);
+        await clickVisibleNext();
+        var rememberedStartMonth = monthLabel();
+        click(start);
+        await waitForUi();
+
+        await showPanel(end);
+        await clickVisibleNext();
+        await clickVisibleNext();
+        click(end);
+        await waitForUi();
+
+        await showPanel(start);
+        var shownStartMonth = monthLabel();
+        await selectVisibleDay(15);
+        assert(
+          "Selecting a day should use the visible panel month for that input",
+          start.value.indexOf(shownStartMonth) === 0 && shownStartMonth === rememberedStartMonth,
+          'expected value to start with "' + shownStartMonth + '" but got "' + start.value + '"'
+        );
+      }
+
+      runChecks()
+        .catch(function (error) {
+          logResult("Regression runner completed", false, error.message);
+        })
+        .finally(function () {
+          summary.textContent = failures === 0 ? "All checks passed." : failures + " check(s) failed.";
+          summary.className = "summary " + (failures === 0 ? "pass" : "fail");
+        });
+    })();
+  </script>
+</body>
+</html>

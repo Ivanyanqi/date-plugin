@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Package Manifest Tests</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 24px;
+    }
+
+    .summary {
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+
+    .pass {
+      color: #12663a;
+    }
+
+    .fail {
+      color: #a12622;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Package Manifest Tests</h1>
+  <div id="summary" class="summary">Running checks...</div>
+  <ol id="results"></ol>
+
+  <script type="module">
+    var summary = document.getElementById("summary");
+    var results = document.getElementById("results");
+    var failures = 0;
+
+    function logResult(name, passed, details) {
+      var item = document.createElement("li");
+      item.className = passed ? "pass" : "fail";
+      item.textContent = (passed ? "PASS: " : "FAIL: ") + name + " - " + details;
+      results.appendChild(item);
+      if (!passed) {
+        failures++;
+      }
+    }
+
+    function assert(name, condition, details) {
+      logResult(name, !!condition, details);
+    }
+
+    try {
+      var packageResponse = await fetch("../../package.json");
+      assert(
+        "package.json should be present",
+        packageResponse.ok,
+        "expected repository root to expose package.json"
+      );
+
+      var manifest = packageResponse.ok ? await packageResponse.json() : null;
+      var releaseNotesPath = manifest
+        ? "../../docs/release-notes-v" + manifest.version + ".md"
+        : "";
+
+      assert(
+        "package manifest should declare publishable module metadata",
+        manifest &&
+          manifest.name === "date-plugin" &&
+          manifest.license === "MIT" &&
+          manifest.type === "module" &&
+          manifest.homepage === "https://github.com/Ivanyanqi/date-plugin" &&
+          manifest.bugs &&
+          manifest.bugs.url === "https://github.com/Ivanyanqi/date-plugin/issues" &&
+          typeof manifest.exports === "object" &&
+          manifest.repository &&
+          manifest.repository.url === "git@github.com:Ivanyanqi/date-plugin.git",
+        "expected name, license, repository, homepage, bugs, type=module and exports map"
+      );
+
+      assert(
+        "package manifest should expose ESM, styles and legacy entrypoints",
+        manifest &&
+          manifest.exports["."] === "./src/index.js" &&
+          manifest.exports["./styles"] === "./date.style.css" &&
+          manifest.exports["./legacy"] === "./date.plugin.ext.js" &&
+          manifest.exports["./auto"] === "./date.plugin.js",
+        "expected exports for module, style and browser legacy builds"
+      );
+
+      assert(
+        "package manifest should limit published files and declare version",
+        manifest &&
+          typeof manifest.version === "string" &&
+          Array.isArray(manifest.files) &&
+          manifest.files.indexOf("src") >= 0 &&
+          manifest.files.indexOf("date.style.css") >= 0 &&
+          manifest.files.indexOf("LICENSE") >= 0 &&
+          manifest.files.indexOf("CHANGELOG.md") >= 0,
+        "expected version field, CHANGELOG, LICENSE and publish file allowlist"
+      );
+
+      assert(
+        "package manifest should expose release workflow scripts",
+        manifest &&
+          manifest.scripts &&
+          typeof manifest.scripts["test:ci"] === "string" &&
+          typeof manifest.scripts["release:publish"] === "string" &&
+          typeof manifest.scripts["release:github"] === "string" &&
+          typeof manifest.scripts["release:notes"] === "string" &&
+          typeof manifest.scripts["release:prepare"] === "string" &&
+          typeof manifest.scripts["release:preflight"] === "string",
+        "expected test:ci, release:prepare, release:notes, release:github, release:publish and release:preflight scripts"
+      );
+
+      var licenseResponse = await fetch("../../LICENSE");
+      assert(
+        "license file should exist",
+        licenseResponse.ok,
+        "expected repository root to expose LICENSE"
+      );
+
+      var compatibilityResponse = await fetch("../../docs/browser-compatibility.md");
+      assert(
+        "browser compatibility document should exist",
+        compatibilityResponse.ok,
+        "expected docs/browser-compatibility.md to be present"
+      );
+
+      var workflowResponse = await fetch("../../.github/workflows/browser-regression.yml");
+      assert(
+        "browser regression workflow should exist",
+        workflowResponse.ok,
+        "expected .github/workflows/browser-regression.yml to be present"
+      );
+
+      var scriptResponse = await fetch("../../scripts/browser-regression-check.mjs");
+      assert(
+        "browser regression script should exist",
+        scriptResponse.ok,
+        "expected scripts/browser-regression-check.mjs to be present"
+      );
+
+      var releasePrepareScriptResponse = await fetch("../../scripts/release-prepare.mjs");
+      assert(
+        "release prepare script should exist",
+        releasePrepareScriptResponse.ok,
+        "expected scripts/release-prepare.mjs to be present"
+      );
+
+      var releaseNotesExportScriptResponse = await fetch("../../scripts/release-notes-export.mjs");
+      assert(
+        "release notes export script should exist",
+        releaseNotesExportScriptResponse.ok,
+        "expected scripts/release-notes-export.mjs to be present"
+      );
+
+      var releaseGithubScriptResponse = await fetch("../../scripts/release-github.mjs");
+      assert(
+        "release github script should exist",
+        releaseGithubScriptResponse.ok,
+        "expected scripts/release-github.mjs to be present"
+      );
+
+      var releasePublishScriptResponse = await fetch("../../scripts/release-publish.mjs");
+      assert(
+        "release publish script should exist",
+        releasePublishScriptResponse.ok,
+        "expected scripts/release-publish.mjs to be present"
+      );
+
+      var releaseProcessResponse = await fetch("../../docs/release-process.md");
+      assert(
+        "release process document should exist",
+        releaseProcessResponse.ok,
+        "expected docs/release-process.md to be present"
+      );
+
+      var releaseNotesResponse = await fetch(releaseNotesPath);
+      assert(
+        "release notes document should exist",
+        releaseNotesResponse.ok,
+        "expected release notes for the current version to be present"
+      );
+
+      var changelogResponse = await fetch("../../CHANGELOG.md");
+      assert(
+        "changelog file should exist",
+        changelogResponse.ok,
+        "expected repository root to expose CHANGELOG.md"
+      );
+
+      var checklistResponse = await fetch("../../docs/release-checklist.md");
+      assert(
+        "release checklist document should exist",
+        checklistResponse.ok,
+        "expected docs/release-checklist.md to be present"
+      );
+
+      var checklistText = checklistResponse.ok ? await checklistResponse.text() : "";
+      var compatibilityText = compatibilityResponse.ok ? await compatibilityResponse.text() : "";
+      var releaseProcessText = releaseProcessResponse.ok ? await releaseProcessResponse.text() : "";
+      var releaseNotesText = releaseNotesResponse.ok ? await releaseNotesResponse.text() : "";
+      assert(
+        "release checklist should mention compatibility, QA and publish steps",
+        checklistText.indexOf("兼容性") >= 0 &&
+          checklistText.indexOf("QA") >= 0 &&
+          checklistText.indexOf("发布") >= 0,
+        "expected release checklist to cover compatibility, QA and publish flow"
+      );
+
+      assert(
+        "release docs should describe support scope, process and version notes",
+        compatibilityText.indexOf("现代浏览器") >= 0 &&
+          compatibilityText.indexOf("已知限制") >= 0 &&
+          releaseProcessText.indexOf("自动回归流程") >= 0 &&
+          releaseProcessText.indexOf("发布执行步骤") >= 0 &&
+          manifest &&
+          releaseNotesText.indexOf("v" + manifest.version) >= 0 &&
+          releaseNotesText.indexOf("已知限制") >= 0,
+        "expected compatibility, process and release notes to describe support scope and current limits"
+      );
+    } catch (error) {
+      logResult("Package manifest test bootstrap completed", false, error.message);
+    }
+
+    summary.textContent = failures === 0 ? "All checks passed." : failures + " check(s) failed.";
+    summary.className = "summary " + (failures === 0 ? "pass" : "fail");
+  </script>
+</body>
+</html>

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ARIA Semantics Tests</title>
+  <link rel="stylesheet" type="text/css" href="../../date.style.css">
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 24px;
+    }
+
+    .summary {
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+
+    .pass {
+      color: #12663a;
+    }
+
+    .fail {
+      color: #a12622;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h1>ARIA Semantics Tests</h1>
+  <input type="text" id="aria-input" aria-label="aria input">
+  <div id="summary" class="summary">Running checks...</div>
+  <ol id="results"></ol>
+
+  <script type="text/javascript" src="../../date.plugin.ext.js"></script>
+  <script type="module">
+    var input = document.getElementById("aria-input");
+    var summary = document.getElementById("summary");
+    var results = document.getElementById("results");
+    var failures = 0;
+
+    function logResult(name, passed, details) {
+      var item = document.createElement("li");
+      item.className = passed ? "pass" : "fail";
+      item.textContent = (passed ? "PASS: " : "FAIL: ") + name + " - " + details;
+      results.appendChild(item);
+      if (!passed) {
+        failures++;
+      }
+    }
+
+    function assert(name, condition, details) {
+      logResult(name, !!condition, details);
+    }
+
+    function click(node) {
+      node.dispatchEvent(new MouseEvent("click", {
+        bubbles: true,
+        cancelable: true
+      }));
+    }
+
+    function wait(ms) {
+      return new Promise(function (resolve) {
+        setTimeout(resolve, ms);
+      });
+    }
+
+    try {
+      if (window.datepickerCoreReady) {
+        await window.datepickerCoreReady;
+      }
+
+      var instance = datepickerinit.init(input);
+      assert(
+        "input should expose collapsed expanded-state before opening",
+        input.getAttribute("aria-expanded") === "false",
+        "expected aria-expanded=false before opening"
+      );
+
+      click(input);
+      await wait(900);
+
+      var panel = instance.wrapper;
+      var firstCell = panel.querySelector("td[data-date]");
+      assert(
+        "opening the picker should expose expanded state and dialog semantics",
+        input.getAttribute("aria-expanded") === "true" &&
+          panel.getAttribute("role") === "dialog" &&
+          !!panel.getAttribute("aria-label"),
+        "expected expanded input and labeled dialog wrapper"
+      );
+
+      assert(
+        "date grid should expose table and gridcell semantics",
+        panel.querySelector("table") &&
+          panel.querySelector("table").getAttribute("role") === "grid" &&
+          firstCell &&
+          firstCell.getAttribute("role") === "gridcell",
+        "expected grid role on table and gridcell role on date cell"
+      );
+
+      click(firstCell);
+      await wait(500);
+      assert(
+        "closing after selection should restore collapsed expanded-state",
+        input.getAttribute("aria-expanded") === "false" &&
+          instance.state.isOpen === false,
+        "expected aria-expanded=false after selection closes panel"
+      );
+    } catch (error) {
+      logResult("ARIA test bootstrap completed", false, error.message);
+    }
+
+    summary.textContent = failures === 0 ? "All checks passed." : failures + " check(s) failed.";
+    summary.className = "summary " + (failures === 0 ? "pass" : "fail");
+  </script>
+</body>
+</html>

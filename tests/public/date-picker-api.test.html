@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>DatePicker Public API Tests</title>
+  <link rel="stylesheet" type="text/css" href="../../date.style.css">
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 24px;
+    }
+
+    .summary {
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+
+    .pass {
+      color: #12663a;
+    }
+
+    .fail {
+      color: #a12622;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h1>DatePicker Public API Tests</h1>
+  <input type="text" id="api-input" aria-label="api input">
+  <div id="summary" class="summary">Running checks...</div>
+  <ol id="results"></ol>
+
+  <script type="module">
+    var input = document.getElementById("api-input");
+    var summary = document.getElementById("summary");
+    var results = document.getElementById("results");
+    var failures = 0;
+
+    function logResult(name, passed, details) {
+      var item = document.createElement("li");
+      item.className = passed ? "pass" : "fail";
+      item.textContent = (passed ? "PASS: " : "FAIL: ") + name + " - " + details;
+      results.appendChild(item);
+      if (!passed) {
+        failures++;
+      }
+    }
+
+    function assert(name, condition, details) {
+      logResult(name, !!condition, details);
+    }
+
+    function wait(ms) {
+      return new Promise(function (resolve) {
+        setTimeout(resolve, ms);
+      });
+    }
+
+    function loadFreshLegacyBridge() {
+      return new Promise(function (resolve, reject) {
+        var script = document.createElement("script");
+        script.src = "../../date.plugin.ext.js?public-api=1";
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+      });
+    }
+
+    try {
+      await loadFreshLegacyBridge();
+      var publicApi = await import("../../src/date-picker.js?public-api=1");
+      var picker = new publicApi.DatePicker(input);
+      assert(
+        "constructor should create an instance with public methods",
+        picker &&
+          typeof picker.open === "function" &&
+          typeof picker.close === "function" &&
+          typeof picker.getValue === "function" &&
+          typeof picker.setValue === "function" &&
+          typeof picker.setMonth === "function" &&
+          typeof picker.destroy === "function",
+        "expected DatePicker instance to expose the public API"
+      );
+
+      picker.open();
+      await wait(800);
+      assert(
+        "open should reveal the panel and set expanded state",
+        input.getAttribute("aria-expanded") === "true" &&
+          document.querySelectorAll(".date-plugin-ui-warpper-show").length === 1,
+        "expected open() to reveal the date picker panel"
+      );
+
+      picker.close();
+      await wait(300);
+      assert(
+        "close should hide the panel and clear expanded state",
+        input.getAttribute("aria-expanded") === "false" &&
+          document.querySelectorAll(".date-plugin-ui-warpper-show").length === 0,
+        "expected close() to hide the date picker panel"
+      );
+
+      picker.setValue("2026-08-15");
+      assert(
+        "setValue and getValue should stay in sync with the input",
+        picker.getValue() === "2026-08-15" &&
+          input.value === "2026-08-15",
+        "expected getValue() and input.value to match the value set through setValue()"
+      );
+
+      picker.open();
+      await wait(800);
+      picker.destroy();
+      await wait(300);
+      assert(
+        "destroy should remove the panel and disable further public interaction",
+        !document.body.contains(picker.wrapper) &&
+          picker.destroyed === true,
+        "expected destroy() to remove the wrapper from the DOM"
+      );
+    } catch (error) {
+      logResult("Public API test bootstrap completed", false, error.message);
+    }
+
+    summary.textContent = failures === 0 ? "All checks passed." : failures + " check(s) failed.";
+    summary.className = "summary " + (failures === 0 ? "pass" : "fail");
+  </script>
+</body>
+</html>
